@@ -1,4 +1,4 @@
-package Network;
+/*package Network;
 
 import Enumeration.LoggerPriority;
 import utils.Logger;
@@ -82,4 +82,4 @@ public class SocketClient {
         }
     }
 
-}
+}*/

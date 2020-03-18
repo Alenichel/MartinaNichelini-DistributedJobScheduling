@@ -1,6 +1,8 @@
 package Network;
 
 import Enumeration.LoggerPriority;
+import Enumeration.SocketReceiverType;
+import main.executorMain;
 import utils.Logger;
 
 import java.io.BufferedReader;
@@ -13,9 +15,16 @@ import java.net.Socket;
 public class SocketReceiver extends Thread {
 
     private Integer port;
+    private SocketReceiverType stype;
 
-    public SocketReceiver(Integer port){
-        this.port = port;
+    public SocketReceiver(SocketReceiverType type){
+        this.stype = type;
+        if (stype.equals(SocketReceiverType.TO_CLIENT)){
+            this.port = executorMain.clientsPort;
+        }
+        if (stype.equals(SocketReceiverType.TO_EXECUTOR)){
+            this.port = executorMain.executorsPort;
+        }
     }
 
     @Override
@@ -27,7 +36,7 @@ public class SocketReceiver extends Thread {
                 InputStream input = socket.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(input));
                 String line = reader.readLine();
-                Logger.log(LoggerPriority.NORMAL, line);
+                Logger.log(LoggerPriority.NOTIFICATION, "SR" + "(" + stype.toString() + ") "+ "-> " + line);
             }
         } catch (IOException e) {
             Logger.log(LoggerPriority.ERROR, e.toString());

@@ -1,5 +1,8 @@
+package main;
+
 import Enumeration.LoggerPriority;
 import Enumeration.MessageType;
+import Enumeration.SocketReceiverType;
 import Messages.Message;
 import Network.SocketBroadcaster;
 import Network.SocketDatagramReceiver;
@@ -19,10 +22,10 @@ public class executorMain {
         SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort);
         sdr.start();
 
-        SocketReceiver srToExecutors = new SocketReceiver(executorsPort);
+        SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
         srToExecutors.start();
 
-        SocketReceiver srToClient = new SocketReceiver(clientsPort);
+        SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
         srToClient.start();
 
 
