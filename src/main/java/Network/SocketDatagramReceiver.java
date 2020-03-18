@@ -24,12 +24,14 @@ public class SocketDatagramReceiver  extends Thread  {
             DatagramPacket dgp = new DatagramPacket(buf, buf.length);
             DatagramSocket socket = new DatagramSocket(this.listeningPort, InetAddress.getByName("0.0.0.0"));
             while (true) {
-                System.out.println("Waiting for data");
+                Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Waiting for data");
                 socket.receive(dgp);
-                System.out.println("Data received");
-                String rcvd = new String(dgp.getData(), 0, dgp.getLength()) + ", from address: "
-                        + dgp.getAddress() + ", port: " + dgp.getPort();
-                System.out.println(rcvd);
+                if ( ! socket.getLocalAddress().equals(dgp.getAddress())){
+                    Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Data received");
+                    String rcvd = "DGR -> " + new String(dgp.getData(), 0, dgp.getLength()) + ", from address: "
+                            + dgp.getAddress() + ", port: " + dgp.getPort();
+                    Logger.log(LoggerPriority.NOTIFICATION, rcvd);
+                }
             }
         } catch (Exception e) {
             Logger.log(LoggerPriority.ERROR, e.toString());

@@ -12,15 +12,18 @@ import java.net.Socket;
 
 public class SocketReceiver extends Thread {
 
-    private ServerSocket ssocket;
-    private Integer executorToExecutorPort = 9670;
+    private Integer port;
+
+    public SocketReceiver(Integer port){
+        this.port = port;
+    }
 
     @Override
     public void run() {
         try {
-            ssocket = new ServerSocket(executorToExecutorPort);
+            ServerSocket ssocket = new ServerSocket(port);
             while (true) {
-                Socket socket = this.ssocket.accept();
+                Socket socket = ssocket.accept();
                 InputStream input = socket.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(input));
                 String line = reader.readLine();

@@ -1,21 +1,29 @@
 import Enumeration.LoggerPriority;
+import Enumeration.MessageType;
+import Messages.Message;
 import Network.SocketBroadcaster;
 import Network.SocketDatagramReceiver;
 import Network.SocketReceiver;
 import utils.Logger;
 
-import java.net.UnknownHostException;
-
 public class executorMain {
-
-    public static Integer port = 9670;
+    public static Integer clientsPort = 9669;
+    public static Integer executorsPort = 9670;
 
     public static void main(String[] args) throws Exception {
         Logger.log(LoggerPriority.NORMAL, "I'm up\nNotifyng others");
-        SocketBroadcaster.send(port, "Sono su");
-        SocketDatagramReceiver sdr = new SocketDatagramReceiver(port);
+
+        Message msg = new Message(MessageType.JOIN_MESSAGE);
+        SocketBroadcaster.send(executorsPort, msg);
+
+        SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort);
         sdr.start();
 
+        SocketReceiver srToExecutors = new SocketReceiver(executorsPort);
+        srToExecutors.start();
+
+        SocketReceiver srToClient = new SocketReceiver(clientsPort);
+        srToClient.start();
 
 
 

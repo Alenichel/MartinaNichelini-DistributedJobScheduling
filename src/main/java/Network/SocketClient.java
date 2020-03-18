@@ -1,7 +1,6 @@
 package Network;
 
 import Enumeration.LoggerPriority;
-import Messages.Message;
 import utils.Logger;
 
 import java.io.*;
