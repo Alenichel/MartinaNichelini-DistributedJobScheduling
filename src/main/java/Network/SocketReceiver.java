@@ -16,6 +16,7 @@ public class SocketReceiver extends Thread {
 
     private Integer port;
     private SocketReceiverType stype;
+    private ServerSocket ssocket;
 
     public SocketReceiver(SocketReceiverType type){
         this.stype = type;
@@ -27,16 +28,21 @@ public class SocketReceiver extends Thread {
         }
     }
 
+    public ServerSocket getSsocket() {
+        return ssocket;
+    }
+
     @Override
     public void run() {
         try {
-            ServerSocket ssocket = new ServerSocket(port);
+            ssocket = new ServerSocket(port);
             while (true) {
                 Socket socket = ssocket.accept();
                 InputStream input = socket.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(input));
                 String line = reader.readLine();
                 Logger.log(LoggerPriority.NOTIFICATION, "SR" + "(" + stype.toString() + ") "+ "-> " + line);
+                socket.close();
             }
         } catch (IOException e) {
             Logger.log(LoggerPriority.ERROR, e.toString());

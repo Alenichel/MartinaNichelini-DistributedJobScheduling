@@ -1,6 +1,8 @@
 package Network;
 
+import Entities.Executor;
 import Enumeration.LoggerPriority;
+import Enumeration.MessageType;
 import utils.Logger;
 
 import java.io.IOException;
@@ -12,9 +14,22 @@ import java.net.UnknownHostException;
 public class SocketDatagramReceiver  extends Thread  {
 
     public Integer listeningPort;
+    private DatagramSocket socket;
+    private Executor executor;
 
-    public SocketDatagramReceiver(Integer listeningPort) {
+    public SocketDatagramReceiver(Integer listeningPort, Executor executor) {
         this.listeningPort = listeningPort;
+        this.executor = executor;
+    }
+
+    private void callback(String msg, InetAddress fromAddress) {
+        switch (msg){
+            case "JOIN_MESSAGE":
+                this.executor.addExecutor(fromAddress, 0);
+
+            default:
+                break;
+        }
     }
 
     @Override
@@ -22,15 +37,17 @@ public class SocketDatagramReceiver  extends Thread  {
         try {
             byte[] buf = new byte[1000];
             DatagramPacket dgp = new DatagramPacket(buf, buf.length);
-            DatagramSocket socket = new DatagramSocket(this.listeningPort, InetAddress.getByName("0.0.0.0"));
+            this.socket = new DatagramSocket(this.listeningPort, InetAddress.getByName("0.0.0.0"));
+            this.executor.setAddress(socket.getLocalAddress());
+            Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Waiting for data");
             while (true) {
-                Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Waiting for data");
-                socket.receive(dgp);
+                this.socket.receive(dgp);
                 if ( ! socket.getLocalAddress().equals(dgp.getAddress())){
                     Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Data received");
-                    String rcvd = "DGR -> " + new String(dgp.getData(), 0, dgp.getLength()) + ", from address: "
-                            + dgp.getAddress() + ", port: " + dgp.getPort();
+                    String content = new String(dgp.getData(), 0, dgp.getLength());
+                    String rcvd = "DGR -> " + content + ", from address: " + dgp.getAddress() + ", port: " + dgp.getPort();
                     Logger.log(LoggerPriority.NOTIFICATION, rcvd);
+                    callback(content, dgp.getAddress());
                 }
             }
         } catch (Exception e) {
