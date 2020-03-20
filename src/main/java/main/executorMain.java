@@ -22,20 +22,28 @@ public class executorMain {
         Message msg = new Message(MessageType.JOIN_MESSAGE);
         SocketBroadcaster.send(executorsPort, msg);
 
-        try {
-            SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort, myself);
-            sdr.start();
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            @Override
+            public void run()
+            {
+                System.out.println("Shutdown");
+                try {
+                    Message lmsg = new Message(MessageType.LEAVE_MESSAGE);
+                    SocketBroadcaster.send(executorsPort, lmsg);
+                } catch (Exception e) {}
+            }
+        });
 
-            SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
-            srToExecutors.start();
+        SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort, myself);
+        sdr.start();
 
-            SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
-            srToClient.start();
+        SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
+        srToExecutors.start();
 
-        } catch (Exception e) {
-            Message lmsg = new Message(MessageType.LEAVE_MESSAGE);
-            SocketBroadcaster.send(executorsPort, lmsg);
-        }
+        SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
+        srToClient.start();
+
 
         //SocketReceiver sm = new SocketReceiver();
         //sm.start();
