@@ -1,5 +1,6 @@
 package main;
 
+import Entities.Executor;
 import Enumeration.LoggerPriority;
 import Enumeration.MessageType;
 import Enumeration.SocketReceiverType;
@@ -16,19 +17,25 @@ public class executorMain {
     public static void main(String[] args) throws Exception {
         Logger.log(LoggerPriority.NORMAL, "I'm up\nNotifyng others");
 
+        Executor myself = new Executor();
+
         Message msg = new Message(MessageType.JOIN_MESSAGE);
         SocketBroadcaster.send(executorsPort, msg);
 
-        SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort);
-        sdr.start();
+        try {
+            SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort, myself);
+            sdr.start();
 
-        SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
-        srToExecutors.start();
+            SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
+            srToExecutors.start();
 
-        SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
-        srToClient.start();
+            SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
+            srToClient.start();
 
-
+        } catch (Exception e) {
+            Message lmsg = new Message(MessageType.LEAVE_MESSAGE);
+            SocketBroadcaster.send(executorsPort, lmsg);
+        }
 
         //SocketReceiver sm = new SocketReceiver();
         //sm.start();
