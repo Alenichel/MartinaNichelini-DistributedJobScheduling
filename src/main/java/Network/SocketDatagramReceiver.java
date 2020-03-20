@@ -26,6 +26,11 @@ public class SocketDatagramReceiver  extends Thread  {
         switch (msg){
             case "JOIN_MESSAGE":
                 this.executor.addExecutor(fromAddress, 0);
+                break;
+
+            case "LEAVE_MESSAGE":
+                this.executor.removeExecutor(fromAddress);
+                break;
 
             default:
                 break;

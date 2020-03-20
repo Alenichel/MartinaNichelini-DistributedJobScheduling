@@ -27,7 +27,7 @@ public class executorMain {
             @Override
             public void run()
             {
-                System.out.println("Shutdown");
+                Logger.log(LoggerPriority.NORMAL, "Shutdown");
                 try {
                     Message lmsg = new Message(MessageType.LEAVE_MESSAGE);
                     SocketBroadcaster.send(executorsPort, lmsg);

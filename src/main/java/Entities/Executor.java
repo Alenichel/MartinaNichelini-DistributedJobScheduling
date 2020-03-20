@@ -28,6 +28,11 @@ public class Executor {
         System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToJobs));
     }
 
+    public synchronized void removeExecutor(InetAddress addres){
+        executorToJobs.remove(addres);
+        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToJobs));
+    }
+
     public void setAddress(InetAddress address) {
         this.address = address;
     }
