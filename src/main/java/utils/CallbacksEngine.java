@@ -32,8 +32,8 @@ public class CallbacksEngine {
         this.executor = executor;
     }
 
-    public void handleCallback(Message msg, InetAddress fromAddress) throws InterruptedException {
-        switch (msg.getType()){
+    public void handleCallback(Object msg, InetAddress fromAddress) throws InterruptedException {
+        switch (((Message)msg).getType()){
             case PONG_MESSAGE:
                 this.executor.addExecutor(fromAddress, ((PongMessage)msg).getNumberOfJobs());
                 break;
