@@ -17,10 +17,11 @@ import Network.SocketSenderUnicast;
 import utils.CallbacksEngine;
 import utils.Logger;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Scanner;
 
-public class executorMain {
+public class executorMain implements Serializable {
     public static Integer clientsPort = 9669;
     public static Integer executorsPort = 9670;
 

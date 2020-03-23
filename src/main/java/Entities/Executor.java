@@ -2,18 +2,19 @@ package Entities;
 
 import utils.PrettyPrintingMap;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.SynchronousQueue;
 
-public class Executor {
+public class Executor implements Serializable {
     private InetAddress address;
     private Integer numberOfJobs;
     private BlockingQueue jobs;
     private Map<InetAddress, Integer> executorToJobs = new HashMap<InetAddress, Integer>();
-    private ExecutorThread et;
+    transient private ExecutorThread et;
 
     public Executor() {
         this.numberOfJobs = 0;
