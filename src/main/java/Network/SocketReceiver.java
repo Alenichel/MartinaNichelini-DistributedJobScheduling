@@ -41,13 +41,12 @@ public class SocketReceiver extends Thread {
                 InputStream input = socket.getInputStream();
                 ObjectInputStream ois = new ObjectInputStream(input);
                 Object rcv = ois.readObject();
-                MessageType msgType = ((Message)rcv).getType();
-                Logger.log(LoggerPriority.NOTIFICATION, "Received message of type " + msgType.toString());
-                CallbacksEngine.getIstance().handleCallback(((Message)rcv), socket.getInetAddress());
+                CallbacksEngine.getIstance().handleCallback(rcv, socket.getInetAddress());
                 socket.close();
             }
         } catch (IOException | ClassNotFoundException | InterruptedException e) {
             Logger.log(LoggerPriority.ERROR, e.toString());
+            e.printStackTrace();
         }
     }
 

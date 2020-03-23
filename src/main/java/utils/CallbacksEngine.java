@@ -13,6 +13,9 @@ import main.executorMain;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import static Enumeration.MessageType.PONG_MESSAGE;
+import static Enumeration.MessageType.PROPOSE_JOB;
+
 public class CallbacksEngine {
 
     public static CallbacksEngine instance = null;
@@ -33,10 +36,13 @@ public class CallbacksEngine {
     }
 
     public void handleCallback(Object msg, InetAddress fromAddress) throws InterruptedException {
-        switch (((Message)msg).getType()){
+        Message message = ((Message)msg);
+        switch (message.getType()){
             case PONG_MESSAGE:
-                this.executor.addExecutor(fromAddress, ((PongMessage)msg).getNumberOfJobs());
+                Integer n = ((PongMessage)msg).getNumberOfJobs();
+                this.executor.addExecutor(fromAddress, n);
                 break;
+
             case PROPOSE_JOB:
                 Job j = new Job(JobType.VERY_COMPLEX_JOB);
                 this.executor.acceptJob(j);
@@ -50,7 +56,7 @@ public class CallbacksEngine {
             case "JOIN_MESSAGE":
                 try {
                     this.executor.addExecutor(fromAddress, 0);
-                    Message pongMessage = new Message(MessageType.PONG_MESSAGE);
+                    Message pongMessage = new PongMessage(this.executor.getNumberOfJobs());
                     SocketSenderUnicast.send(pongMessage, fromAddress, executorMain.executorsPort);
                 } catch (IOException | ClassNotFoundException e){
                     Logger.log(LoggerPriority.ERROR, "Error while sending back pong");

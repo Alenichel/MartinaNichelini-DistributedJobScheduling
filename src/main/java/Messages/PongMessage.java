@@ -6,8 +6,8 @@ public class PongMessage extends Message {
 
     private Integer numberOfJobs;
 
-    public PongMessage(MessageType type, Integer numberOfJobs) {
-        super(MessageType.PONG_MESSAGE.PONG_MESSAGE);
+    public PongMessage(Integer numberOfJobs) {
+        this.type = MessageType.PONG_MESSAGE;
         this.numberOfJobs = numberOfJobs;
     }
 

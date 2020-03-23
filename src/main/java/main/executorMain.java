@@ -6,6 +6,8 @@ import Enumeration.JobType;
 import Enumeration.LoggerPriority;
 import Enumeration.MessageType;
 import Enumeration.SocketReceiverType;
+import Messages.JoinMessage;
+import Messages.LeaveMessage;
 import Messages.Message;
 import Messages.ProposeJobMessage;
 import Network.SocketBroadcaster;
@@ -38,7 +40,7 @@ public class executorMain {
 
         CallbacksEngine.getIstance().setExecutor(myself);
 
-        Message msg = new Message(MessageType.JOIN_MESSAGE);
+        Message msg = new JoinMessage();
         SocketBroadcaster.send(executorsPort, msg);
 
         Runtime.getRuntime().addShutdownHook(new Thread()
@@ -48,7 +50,7 @@ public class executorMain {
             {
                 Logger.log(LoggerPriority.NORMAL, "Shutdown");
                 try {
-                    Message lmsg = new Message(MessageType.LEAVE_MESSAGE);
+                    Message lmsg = new LeaveMessage();
                     SocketBroadcaster.send(executorsPort, lmsg);
                 } catch (Exception e) {}
             }

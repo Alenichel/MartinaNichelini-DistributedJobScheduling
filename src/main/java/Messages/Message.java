@@ -4,11 +4,11 @@ import Enumeration.MessageType;
 
 import java.io.Serializable;
 
-public class Message implements Serializable {
+public abstract class Message implements Serializable {
 
-    private MessageType type;
+    protected MessageType type;
 
-    public Message(MessageType type){
+    public Message(){
         this.type = type;
     }
 

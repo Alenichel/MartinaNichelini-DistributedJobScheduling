@@ -60,6 +60,10 @@ public class Executor {
         this.jobs.put(j);
     }
 
+    public Integer getNumberOfJobs() {
+        return numberOfJobs;
+    }
+
     private class ExecutorThread extends Thread{
         @Override
         public void run() {
