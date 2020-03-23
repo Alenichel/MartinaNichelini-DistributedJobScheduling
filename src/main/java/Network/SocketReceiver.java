@@ -5,6 +5,7 @@ import Enumeration.MessageType;
 import Enumeration.SocketReceiverType;
 import Messages.Message;
 import main.executorMain;
+import utils.CallbacksEngine;
 import utils.Logger;
 
 import java.io.*;
@@ -42,12 +43,10 @@ public class SocketReceiver extends Thread {
                 Object rcv = ois.readObject();
                 MessageType msgType = ((Message)rcv).getType();
                 Logger.log(LoggerPriority.NOTIFICATION, "Received message of type " + msgType.toString());
-               /*BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                String line = reader.readLine();
-                Logger.log(LoggerPriority.NOTIFICATION, "SR" + "(" + stype.toString() + ") "+ "-> " + line);*/
+                CallbacksEngine.getIstance().handleCallback(((Message)rcv), socket.getInetAddress());
                 socket.close();
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException | InterruptedException e) {
             Logger.log(LoggerPriority.ERROR, e.toString());
         }
     }

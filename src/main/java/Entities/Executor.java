@@ -1,10 +1,8 @@
 package Entities;
 
-import Enumeration.JobType;
 import utils.PrettyPrintingMap;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -13,12 +11,15 @@ import java.util.concurrent.SynchronousQueue;
 public class Executor {
     private InetAddress address;
     private Integer numberOfJobs;
-    BlockingQueue jobs;
+    private BlockingQueue jobs;
     private Map<InetAddress, Integer> executorToJobs = new HashMap<InetAddress, Integer>();
+    private ExecutorThread et;
 
     public Executor() {
         this.numberOfJobs = 0;
         jobs = new SynchronousQueue();
+        this.et = new ExecutorThread();
+        this.et.start();
     }
 
     public synchronized void addExecutor(InetAddress address, Integer jobs){
@@ -59,7 +60,7 @@ public class Executor {
         this.jobs.put(j);
     }
 
-    private class executorThread extends Thread{
+    private class ExecutorThread extends Thread{
         @Override
         public void run() {
             while (true){
