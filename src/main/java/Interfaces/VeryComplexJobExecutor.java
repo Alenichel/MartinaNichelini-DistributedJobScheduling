@@ -13,7 +13,7 @@ public class VeryComplexJobExecutor implements JobExecutor, Serializable {
     @Override
     public void execute() throws InterruptedException {
         Logger.log(LoggerPriority.NOTIFICATION, "Job started");
-        Thread.sleep(timer * 1000);
+        //Thread.sleep(timer * 1000);
         Logger.log(LoggerPriority.NOTIFICATION, "Job completed");
     }
 }
