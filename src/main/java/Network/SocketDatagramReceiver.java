@@ -36,7 +36,8 @@ public class SocketDatagramReceiver  extends Thread  {
             Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Waiting for data");
             while (true) {
                 this.socket.receive(dgp);
-                if ( ! socket.getLocalAddress().equals(dgp.getAddress())){
+                String local = InetAddress.getLocalHost().getHostAddress();
+                if ( ! local.equals(dgp.getAddress().getHostAddress())){
                     Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Data received");
                     String content = new String(dgp.getData(), 0, dgp.getLength());
                     String rcvd = "DGR -> " + content + ", from address: " + dgp.getAddress() + ", port: " + dgp.getPort();
