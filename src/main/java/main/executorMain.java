@@ -12,6 +12,7 @@ import Network.SocketBroadcaster;
 import Network.SocketDatagramReceiver;
 import Network.SocketReceiver;
 import Network.SocketSenderUnicast;
+import utils.CallbacksEngine;
 import utils.Logger;
 
 import java.net.InetAddress;
@@ -25,6 +26,7 @@ public class executorMain {
         Logger.log(LoggerPriority.NORMAL, "I'm up\nNotifyng others");
 
         Executor myself = new Executor();
+        CallbacksEngine.getIstance().setExecutor(myself);
 
         Message msg = new Message(MessageType.JOIN_MESSAGE);
         SocketBroadcaster.send(executorsPort, msg);
@@ -55,7 +57,7 @@ public class executorMain {
         Integer choice;
         while (true){
             System.out.println("1) Comunicare agli altri di aver ricevuto lavoro" +
-                    "9) Per uscire");
+                    "\n9) Per uscire");
             String tokens[] = scanner.nextLine().split("");
             choice = Integer.parseInt(tokens[0]);
             switch (choice){

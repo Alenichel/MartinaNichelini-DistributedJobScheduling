@@ -5,6 +5,7 @@ import Entities.Executor;
 import Enumeration.LoggerPriority;
 import Enumeration.MessageType;
 import Messages.Message;
+import utils.CallbacksEngine;
 import utils.Logger;
 import main.executorMain;
 
@@ -25,27 +26,6 @@ public class SocketDatagramReceiver  extends Thread  {
         this.executor = executor;
     }
 
-    private void callback(String msg, InetAddress fromAddress) {
-        switch (msg){
-            case "JOIN_MESSAGE":
-                try {
-                    this.executor.addExecutor(fromAddress, 0);
-                    Message pongMessage = new Message(MessageType.PONG_MESSAGE);
-                    SocketSenderUnicast.send(pongMessage, fromAddress, executorMain.executorsPort);
-                } catch (IOException | ClassNotFoundException e){
-                    Logger.log(LoggerPriority.ERROR, "Error while sending back pong");
-                }
-                break;
-
-            case "LEAVE_MESSAGE":
-                this.executor.removeExecutor(fromAddress);
-                break;
-
-            default:
-                break;
-        }
-    }
-
     @Override
     public void run() {
         try {
@@ -61,7 +41,7 @@ public class SocketDatagramReceiver  extends Thread  {
                     String content = new String(dgp.getData(), 0, dgp.getLength());
                     String rcvd = "DGR -> " + content + ", from address: " + dgp.getAddress() + ", port: " + dgp.getPort();
                     Logger.log(LoggerPriority.NOTIFICATION, rcvd);
-                    callback(content, dgp.getAddress());
+                    CallbacksEngine.getIstance().handleCallback(content, dgp.getAddress());
                 }
             }
         } catch (Exception e) {
