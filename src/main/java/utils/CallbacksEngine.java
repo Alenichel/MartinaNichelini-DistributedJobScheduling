@@ -1,6 +1,8 @@
 package utils;
 
 import Entities.Executor;
+import Entities.Job;
+import Enumeration.JobType;
 import Enumeration.LoggerPriority;
 import Enumeration.MessageType;
 import Messages.Message;
@@ -30,11 +32,14 @@ public class CallbacksEngine {
         this.executor = executor;
     }
 
-    public void handleCallback(Message msg, InetAddress fromAddress){
+    public void handleCallback(Message msg, InetAddress fromAddress) throws InterruptedException {
         switch (msg.getType()){
             case PONG_MESSAGE:
                 this.executor.addExecutor(fromAddress, ((PongMessage)msg).getNumberOfJobs());
                 break;
+            case PROPOSE_JOB:
+                Job j = new Job(JobType.VERY_COMPLEX_JOB);
+                this.executor.acceptJob(j);
             default:
                 Logger.log(LoggerPriority.ERROR, "Message type not recgnized");
         }
