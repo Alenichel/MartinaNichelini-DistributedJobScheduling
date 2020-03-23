@@ -3,7 +3,9 @@ package Interfaces;
 import Enumeration.LoggerPriority;
 import utils.Logger;
 
-public class VeryComplexJobExecutor implements JobExecutor {
+import java.io.Serializable;
+
+public class VeryComplexJobExecutor implements JobExecutor, Serializable {
 
     private Integer timer = (int)(Math.random() * 100);
 
