@@ -4,6 +4,7 @@ import Enumeration.LoggerPriority;
 import utils.Logger;
 
 import java.io.Serializable;
+import java.sql.Time;
 
 public class VeryComplexJobExecutor implements JobExecutor, Serializable {
 
@@ -12,7 +13,7 @@ public class VeryComplexJobExecutor implements JobExecutor, Serializable {
     @Override
     public void execute() throws InterruptedException {
         Logger.log(LoggerPriority.NOTIFICATION, "Job started");
-        Thread.sleep(timer);
+        Thread.sleep(timer * 1000);
         Logger.log(LoggerPriority.NOTIFICATION, "Job completed");
     }
 }
