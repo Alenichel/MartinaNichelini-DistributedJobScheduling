@@ -1,9 +1,12 @@
 package Network;
 
+
 import Entities.Executor;
 import Enumeration.LoggerPriority;
 import Enumeration.MessageType;
+import Messages.Message;
 import utils.Logger;
+import main.executorMain;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -25,7 +28,13 @@ public class SocketDatagramReceiver  extends Thread  {
     private void callback(String msg, InetAddress fromAddress) {
         switch (msg){
             case "JOIN_MESSAGE":
-                this.executor.addExecutor(fromAddress, 0);
+                try {
+                    this.executor.addExecutor(fromAddress, 0);
+                    Message pongMessage = new Message(MessageType.PONG_MESSAGE);
+                    SocketSenderUnicast.send(pongMessage, fromAddress, executorMain.executorsPort);
+                } catch (IOException | ClassNotFoundException e){
+                    Logger.log(LoggerPriority.ERROR, "Error while sending back pong");
+                }
                 break;
 
             case "LEAVE_MESSAGE":
