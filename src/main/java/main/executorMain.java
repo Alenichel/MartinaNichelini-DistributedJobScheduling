@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Scanner;
 
-public class executorMain implements Serializable {
+public class executorMain  {
     public static Integer clientsPort = 9669;
     public static Integer executorsPort = 9670;
 
