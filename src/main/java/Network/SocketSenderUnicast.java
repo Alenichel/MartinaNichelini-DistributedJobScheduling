@@ -11,7 +11,7 @@ import java.net.Socket;
 
 public class SocketSenderUnicast {
 
-    private static ObjectOutputStream buildOOS(String host, Integer port) throws IOException {
+    private static ObjectOutputStream buildOOS(InetAddress host, Integer port) throws IOException {
         Socket socket = new Socket(host, port);
         OutputStream os  = socket.getOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(os);
@@ -19,7 +19,7 @@ public class SocketSenderUnicast {
     }
 
     public static void send(Message message, InetAddress host, Integer port) throws IOException, ClassNotFoundException {
-        ObjectOutputStream oos = buildOOS(host.toString(), port);
+        ObjectOutputStream oos = buildOOS(host, port);
         oos.writeObject(message);
         oos.flush();
         oos.reset();
