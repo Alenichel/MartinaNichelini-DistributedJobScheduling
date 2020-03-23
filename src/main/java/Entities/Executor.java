@@ -37,4 +37,21 @@ public class Executor {
         this.address = address;
     }
 
+    private InetAddress getMinKey(Map<InetAddress, Integer> map) {
+        InetAddress minKey = null;
+        int minValue = Integer.MAX_VALUE;
+        for(InetAddress key : map.keySet()) {
+            int value = map.get(key);
+            if(value < minValue) {
+                minValue = value;
+                minKey = key;
+            }
+        }
+        return minKey;
+    }
+
+    public InetAddress proposeJob(){
+        return getMinKey(this.executorToJobs);
+    }
+
 }

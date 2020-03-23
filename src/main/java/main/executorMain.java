@@ -1,14 +1,21 @@
 package main;
 
 import Entities.Executor;
+import Entities.Job;
+import Enumeration.JobType;
 import Enumeration.LoggerPriority;
 import Enumeration.MessageType;
 import Enumeration.SocketReceiverType;
 import Messages.Message;
+import Messages.ProposeJobMessage;
 import Network.SocketBroadcaster;
 import Network.SocketDatagramReceiver;
 import Network.SocketReceiver;
+import Network.SocketSenderUnicast;
 import utils.Logger;
+
+import java.net.InetAddress;
+import java.util.Scanner;
 
 public class executorMain {
     public static Integer clientsPort = 9669;
@@ -44,6 +51,26 @@ public class executorMain {
         SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
         srToClient.start();
 
+        Scanner scanner = new Scanner(System.in);
+        Integer choice;
+        while (true){
+            System.out.println("1) Comunicare agli altri di aver ricevuto lavoro" +
+                    "9) Per uscire");
+            String tokens[] = scanner.nextLine().split("");
+            choice = Integer.parseInt(tokens[0]);
+            switch (choice){
+                case 1:
+                    Job j = new Job(JobType.VERY_COMPLEX_JOB);
+                    ProposeJobMessage pjm = new ProposeJobMessage(j);
+                    InetAddress a = myself.proposeJob();
+                    SocketSenderUnicast.send(pjm, a, executorsPort);
+                    break;
+                case 9:
+                    return;
+                default:
+                    break;
+            }
+        }
 
         //SocketReceiver sm = new SocketReceiver();
         //sm.start();

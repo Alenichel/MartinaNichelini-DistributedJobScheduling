@@ -1,24 +1,28 @@
 package Network;
 
+import Messages.Message;
+
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 
 public class SocketSenderUnicast {
 
-    private Integer socketPort;
-    private String host;
-
-    public SocketSenderUnicast(Integer socketPort, String host) {
-        this.socketPort = socketPort;
-        this.host = host;
+    private static ObjectOutputStream buildOOS(String host, Integer port) throws IOException {
+        Socket socket = new Socket(host, port);
+        OutputStream os  = socket.getOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(os);
+        return oos;
     }
 
-    public void send(String message) throws IOException, ClassNotFoundException {
-        Socket socket = new Socket(this.host, this.socketPort);
-        OutputStream output = socket.getOutputStream();
-        PrintWriter writer = new PrintWriter(output, true);
-        writer.println(message);
+    public static void send(Message message, InetAddress host, Integer port) throws IOException, ClassNotFoundException {
+        ObjectOutputStream oos = buildOOS(host.toString(), port);
+        oos.writeObject(message);
+        oos.flush();
+        oos.reset();
     }
+
 }
