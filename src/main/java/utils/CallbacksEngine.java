@@ -49,6 +49,8 @@ public class CallbacksEngine {
                     SocketSenderUnicast.send(pongMessage, fromAddress, executorMain.executorsPort);
                 } catch (IOException | ClassNotFoundException e){
                     Logger.log(LoggerPriority.ERROR, "Error while sending back pong");
+                    System.out.println(e.toString());
+                    e.printStackTrace();
                 }
                 break;
 

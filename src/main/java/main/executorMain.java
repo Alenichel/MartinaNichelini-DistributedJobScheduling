@@ -26,6 +26,16 @@ public class executorMain {
         Logger.log(LoggerPriority.NORMAL, "I'm up\nNotifyng others");
 
         Executor myself = new Executor();
+
+        SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort, myself);
+        sdr.start();
+
+        SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
+        srToExecutors.start();
+
+        SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
+        srToClient.start();
+
         CallbacksEngine.getIstance().setExecutor(myself);
 
         Message msg = new Message(MessageType.JOIN_MESSAGE);
@@ -43,15 +53,6 @@ public class executorMain {
                 } catch (Exception e) {}
             }
         });
-
-        SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort, myself);
-        sdr.start();
-
-        SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
-        srToExecutors.start();
-
-        SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
-        srToClient.start();
 
         Scanner scanner = new Scanner(System.in);
         Integer choice;
