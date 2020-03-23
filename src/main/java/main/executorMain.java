@@ -25,7 +25,7 @@ public class executorMain {
     public static Integer executorsPort = 9670;
 
     public static void main(String[] args) throws Exception {
-        Logger.log(LoggerPriority.NORMAL, "I'm up\nNotifyng others");
+        Logger.log(LoggerPriority.NOTIFICATION, "I'm up");
 
         Executor myself = new Executor();
 

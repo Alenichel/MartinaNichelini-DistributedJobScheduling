@@ -6,7 +6,7 @@ import utils.Logger;
 import java.io.Serializable;
 import java.sql.Time;
 
-public class VeryComplexJobExecutor implements JobExecutor, Serializable {
+public class VeryComplexJobExecutor extends JobExecutor {
 
     private Integer timer = (int)(Math.random() * 100);
 
