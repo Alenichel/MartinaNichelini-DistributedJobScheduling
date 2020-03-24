@@ -6,10 +6,7 @@ import Enumeration.JobType;
 import Enumeration.LoggerPriority;
 import Enumeration.MessageType;
 import Enumeration.SocketReceiverType;
-import Messages.JoinMessage;
-import Messages.LeaveMessage;
-import Messages.Message;
-import Messages.ProposeJobMessage;
+import Messages.*;
 import Network.SocketBroadcaster;
 import Network.SocketDatagramReceiver;
 import Network.SocketReceiver;
@@ -60,16 +57,25 @@ public class executorMain  {
         Scanner scanner = new Scanner(System.in);
         Integer choice;
         while (true){
-            System.out.println("1) Comunicare agli altri di aver ricevuto lavoro" +
-                    "\n9) Per uscire");
+            System.out.println( "***************************" +
+                    "\n   Number of active jobs: " + myself.getNumberOfJobs().toString() +
+                    "\n   Select: " +
+                    "\n1) New job" +
+                    "\n9) Exit" +
+                    "\n***************************");
             String tokens[] = scanner.nextLine().split("");
-            choice = Integer.parseInt(tokens[0]);
+            try {
+                choice = Integer.parseInt(tokens[0]);
+            } catch (NumberFormatException e){
+                Logger.log(LoggerPriority.NOTIFICATION, "Non valid number");
+                continue;
+            }
             switch (choice){
                 case 1:
-                    Job j = new Job(JobType.VERY_COMPLEX_JOB);
-                    ProposeJobMessage pjm = new ProposeJobMessage(j);
+                    //Job j = new Job(JobType.VERY_COMPLEX_JOB);
+                    //ProposeJobMessage pjm = new ProposeJobMessage(j);
                     InetAddress a = myself.proposeJob();
-                    SocketSenderUnicast.send(pjm, a, executorsPort);
+                    SocketSenderUnicast.send(new DumbMessage(), a, executorsPort);
                     break;
                 case 9:
                     return;

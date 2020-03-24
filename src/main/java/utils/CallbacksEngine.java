@@ -46,8 +46,9 @@ public class CallbacksEngine {
             case PROPOSE_JOB:
                 Job j = new Job(JobType.VERY_COMPLEX_JOB);
                 this.executor.acceptJob(j);
+
             default:
-                Logger.log(LoggerPriority.ERROR, "Message type not recgnized");
+                Logger.log(LoggerPriority.WARNING, "Message type not recognized. It won't be handled");
         }
     }
 

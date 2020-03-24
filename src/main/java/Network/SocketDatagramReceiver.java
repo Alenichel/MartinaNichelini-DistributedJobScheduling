@@ -8,6 +8,7 @@ import Messages.Message;
 import utils.CallbacksEngine;
 import utils.Logger;
 import main.executorMain;
+import utils.NetworkUtilis;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -37,7 +38,9 @@ public class SocketDatagramReceiver  extends Thread  {
             while (true) {
                 this.socket.receive(dgp);
                 String local = InetAddress.getLocalHost().getHostAddress();
-                if ( ! local.equals(dgp.getAddress().getHostAddress())){
+                Logger.log(LoggerPriority.NOTIFICATION, "My address is: " + local);
+                String localhost = "127.0.1.1";
+                if ( ! local.equals(dgp.getAddress().getHostAddress()) && !localhost.equals(dgp.getAddress().getHostAddress())){
                     Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Data received");
                     String content = new String(dgp.getData(), 0, dgp.getLength());
                     String rcvd = "DGR -> " + content + ", from address: " + dgp.getAddress() + ", port: " + dgp.getPort();
