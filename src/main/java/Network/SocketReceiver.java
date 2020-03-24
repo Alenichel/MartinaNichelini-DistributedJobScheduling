@@ -41,6 +41,7 @@ public class SocketReceiver extends Thread {
                 InputStream input = socket.getInputStream();
                 ObjectInputStream ois = new ObjectInputStream(input);
                 Object rcv = ois.readObject();
+                Logger.log(LoggerPriority.NOTIFICATION, "SR -> Received new message");
                 Logger.log(LoggerPriority.NOTIFICATION, "Received message of type: " +
                         ((Message)rcv).getType().toString() +
                         " by " + socket.getRemoteSocketAddress());
