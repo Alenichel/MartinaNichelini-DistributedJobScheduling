@@ -68,15 +68,15 @@ public class executorMain  {
             try {
                 choice = Integer.parseInt(tokens[0]);
             } catch (NumberFormatException e){
-                Logger.log(LoggerPriority.NOTIFICATION, "Non valid number");
+                Logger.log(LoggerPriority.NOTIFICATION, "Not valid number");
                 continue;
             }
             switch (choice){
                 case 1:
-                    //Job j = new Job(JobType.VERY_COMPLEX_JOB);
-                    //ProposeJobMessage pjm = new ProposeJobMessage(j);
+                    Job j = new Job(JobType.VERY_COMPLEX_JOB);
+                    ProposeJobMessage pjm = new ProposeJobMessage(j);
                     InetAddress a = myself.proposeJob();
-                    SocketSenderUnicast.send(new DumbMessage(), a, executorsPort);
+                    SocketSenderUnicast.send(pjm, a, executorsPort);
                     break;
                 case 9:
                     return;

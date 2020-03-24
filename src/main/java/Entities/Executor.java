@@ -16,7 +16,7 @@ import java.util.concurrent.SynchronousQueue;
 public class Executor {
     private InetAddress address;
     private Integer numberOfJobs;
-    private BlockingQueue jobs;
+    private BlockingQueue<Job> jobs;
     private Map<InetAddress, Integer> executorToJobs;
     private ExecutorThread et;
 
@@ -29,7 +29,7 @@ public class Executor {
         } catch (UnknownHostException | SocketException e) {
             Logger.log(LoggerPriority.ERROR, "Unknown host encountered during initialization, continuing...");
         }
-        jobs = new SynchronousQueue();
+        jobs = new SynchronousQueue<Job>();
         this.et = new ExecutorThread();
         this.et.start();
     }
@@ -38,9 +38,7 @@ public class Executor {
         if (!this.executorToJobs.containsKey(address)) {
             this.executorToJobs.put(address, jobs);
         }
-        System.out.println("***************************");
-        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToJobs));
-        System.out.println("***************************");
+        printState();
     }
 
     public synchronized void removeExecutor(InetAddress addres){
@@ -71,9 +69,10 @@ public class Executor {
         return getMinKey(this.executorToJobs);
     }
 
-    public void acceptJob(Job j) throws InterruptedException {
+    public void acceptJob(Job job) throws InterruptedException {
+        Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getId() + ")");
         this.numberOfJobs ++;
-        this.jobs.put(j);
+        this.jobs.offer(job);
     }
 
     public Integer getNumberOfJobs() {
@@ -83,17 +82,25 @@ public class Executor {
     private class ExecutorThread extends Thread{
         @Override
         public void run() {
+            Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: I'm up and running");
             while (true){
-                if(!jobs.isEmpty()){
-                    try {
-                        Job currentJob = (Job)jobs.take();
-                        currentJob.getJe().execute();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
+                try {
+                    Job currentJob = (Job)jobs.take();
+                    Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: new job taken from the queue with id: " + currentJob.getId());
+                    currentJob.getJe().execute();
+                    Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: job with id " + currentJob.getId() + " correctly executed");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }
     }
+
+
+    private void printState(){
+        System.out.println("***************************");
+        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToJobs));
+        System.out.println("***************************");
+    }
+
 }

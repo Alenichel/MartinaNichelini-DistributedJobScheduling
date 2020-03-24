@@ -7,6 +7,7 @@ import Enumeration.LoggerPriority;
 import Enumeration.MessageType;
 import Messages.Message;
 import Messages.PongMessage;
+import Messages.ProposeJobMessage;
 import Network.SocketSenderUnicast;
 import main.executorMain;
 
@@ -44,9 +45,9 @@ public class CallbacksEngine {
                 break;
 
             case PROPOSE_JOB:
-                Job j = new Job(JobType.VERY_COMPLEX_JOB);
+                Job j = ((ProposeJobMessage)msg).getJob();
                 this.executor.acceptJob(j);
-
+                break;
             default:
                 Logger.log(LoggerPriority.WARNING, "Message type not recognized. It won't be handled");
         }

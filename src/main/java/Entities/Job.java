@@ -23,6 +23,7 @@ public class Job implements Serializable {
         this.isCompleted = false;
         this.type = type;
         this.id = UUID.randomUUID().toString();
+
         switch (this.type){
             case VERY_COMPLEX_JOB:
                 je = new VeryComplexJobExecutor();
