@@ -2,9 +2,11 @@ package Entities;
 
 import Enumeration.LoggerPriority;
 import utils.Logger;
+import utils.NetworkUtilis;
 import utils.PrettyPrintingMap;
 
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,8 +24,9 @@ public class Executor {
         this.numberOfJobs = 0;
         this.executorToJobs = new HashMap<InetAddress, Integer>();
         try {
-            this.executorToJobs.put(InetAddress.getByName(InetAddress.getLocalHost().getHostAddress()), 0);
-        } catch (UnknownHostException e) {
+            this.address = NetworkUtilis.getLocalAddress();
+            this.executorToJobs.put(this.address, 0);
+        } catch (UnknownHostException | SocketException e) {
             Logger.log(LoggerPriority.ERROR, "Unknown host encountered during initialization, continuing...");
         }
         jobs = new SynchronousQueue();
@@ -47,11 +50,6 @@ public class Executor {
         System.out.println("***************************");
     }
 
-    public void setAddress(InetAddress address) {
-        Logger.log(LoggerPriority.NOTIFICATION, "Local address setupped up");
-        this.address = address;
-    }
-
     public InetAddress getAddress() {
         return address;
     }
@@ -61,7 +59,7 @@ public class Executor {
         int minValue = Integer.MAX_VALUE;
         for(InetAddress key : map.keySet()) {
             int value = map.get(key);
-            if(value < minValue && !key.isLoopbackAddress()) {
+            if(value < minValue && !key.equals(this.address)) {
                 minValue = value;
                 minKey = key;
             }
