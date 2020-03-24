@@ -13,6 +13,7 @@ import Network.SocketReceiver;
 import Network.SocketSenderUnicast;
 import utils.CallbacksEngine;
 import utils.Logger;
+import utils.NetworkUtilis;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -26,6 +27,7 @@ public class executorMain  {
         Logger.log(LoggerPriority.NOTIFICATION, "I'm up");
 
         Executor myself = new Executor();
+        myself.setAddress(NetworkUtilis.getLocalAddress());
 
         SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort, myself);
         sdr.start();

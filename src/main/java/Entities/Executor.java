@@ -48,7 +48,12 @@ public class Executor {
     }
 
     public void setAddress(InetAddress address) {
+        Logger.log(LoggerPriority.NOTIFICATION, "Local address setupped up");
         this.address = address;
+    }
+
+    public InetAddress getAddress() {
+        return address;
     }
 
     private InetAddress getMinKey(Map<InetAddress, Integer> map) {

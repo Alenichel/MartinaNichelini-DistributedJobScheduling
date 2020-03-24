@@ -33,14 +33,13 @@ public class SocketDatagramReceiver  extends Thread  {
             byte[] buf = new byte[1000];
             DatagramPacket dgp = new DatagramPacket(buf, buf.length);
             this.socket = new DatagramSocket(this.listeningPort, InetAddress.getByName("0.0.0.0"));
-            this.executor.setAddress(socket.getLocalAddress());
             Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Waiting for data");
             while (true) {
                 this.socket.receive(dgp);
-                String local = InetAddress.getLocalHost().getHostAddress();
+                String local = NetworkUtilis.getLocalAddress().getHostAddress();
+                String gotAddress = dgp.getAddress().getHostAddress();
                 Logger.log(LoggerPriority.NOTIFICATION, "My address is: " + local);
-                String localhost = "127.0.1.1";
-                if ( ! local.equals(dgp.getAddress().getHostAddress()) && !localhost.equals(dgp.getAddress().getHostAddress())){
+                if ( ! local.equals(gotAddress) ){
                     Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Data received");
                     String content = new String(dgp.getData(), 0, dgp.getLength());
                     String rcvd = "DGR -> " + content + ", from address: " + dgp.getAddress() + ", port: " + dgp.getPort();
