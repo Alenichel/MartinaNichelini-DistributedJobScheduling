@@ -27,7 +27,6 @@ public class executorMain  {
         Logger.log(LoggerPriority.NOTIFICATION, "I'm up");
 
         Executor myself = new Executor();
-        myself.setAddress(NetworkUtilis.getLocalAddress());
 
         SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort, myself);
         sdr.start();
