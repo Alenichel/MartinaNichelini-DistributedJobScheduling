@@ -1,5 +1,6 @@
 package Entities;
 
+import Enumeration.JobStatus;
 import Enumeration.JobType;
 import Enumeration.LoggerPriority;
 import Interfaces.JobExecutor;
@@ -15,12 +16,12 @@ public class Job extends Thread implements Serializable {
     private InetAddress executorAddress;
     private JobType type;
     private String id;
-    private Boolean isCompleted;
+    private JobStatus status;
     private JobExecutor je;
 
     public Job(JobType type) {
         this.isAssigned = false;
-        this.isCompleted = false;
+        this.status = JobStatus.UNASSIGNED;
         this.type = type;
         this.id = UUID.randomUUID().toString();
 
@@ -55,19 +56,19 @@ public class Job extends Thread implements Serializable {
         return id;
     }
 
-    public Boolean getCompleted() {
-        return isCompleted;
+    public JobStatus getStatus() {
+        return status;
     }
 
-    public JobExecutor getJe() {
-        return je;
-    }
+    public void setStatus(JobStatus status) { this.status = status;}
 
     @Override
     public void run() {
         try {
             je.execute();
-            Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: job with id " + this.id+ " correctly executed");
+            Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: job with id " + id+ " correctly executed");
+            Executor e = Executor.getIstance();
+            e.jobCompleted(id);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

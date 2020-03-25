@@ -1,5 +1,7 @@
 package utils;
 
+import Entities.Executor;
+
 import java.util.Iterator;
 import java.util.Map;
 
@@ -8,7 +10,7 @@ public class PrettyPrintingMap<K, V> {
 
     public PrettyPrintingMap(Map<K, V> map) {
         this.map = map;
-        System.out.println("SYSTEM STATE");
+        System.out.println("SYSTEM STATE - " + Executor.getIstance().getNumberOfJobs());
     }
 
     public String toString() {

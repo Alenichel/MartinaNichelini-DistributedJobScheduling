@@ -20,11 +20,9 @@ public class SocketDatagramReceiver  extends Thread  {
 
     public Integer listeningPort;
     private DatagramSocket socket;
-    private Executor executor;
 
-    public SocketDatagramReceiver(Integer listeningPort, Executor executor) {
+    public SocketDatagramReceiver(Integer listeningPort) {
         this.listeningPort = listeningPort;
-        this.executor = executor;
     }
 
     @Override

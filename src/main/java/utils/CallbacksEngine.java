@@ -21,8 +21,6 @@ public class CallbacksEngine {
 
     public static CallbacksEngine instance = null;
 
-    private Executor executor;
-
     public static CallbacksEngine getIstance() {
         if(instance==null)
             synchronized(CallbacksEngine.class) {
@@ -32,21 +30,17 @@ public class CallbacksEngine {
         return instance;
     }
 
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
-    }
-
     public void handleCallback(Object msg, InetAddress fromAddress) throws InterruptedException {
         Message message = ((Message)msg);
         switch (message.getType()){
             case PONG_MESSAGE:
                 Integer n = ((PongMessage)msg).getNumberOfJobs();
-                this.executor.addExecutor(fromAddress, n);
+                Executor.getIstance().addExecutor(fromAddress, n);
                 break;
 
             case PROPOSE_JOB:
                 Job j = ((ProposeJobMessage)msg).getJob();
-                this.executor.acceptJob(j);
+                Executor.getIstance().acceptJob(j);
                 break;
             default:
                 Logger.log(LoggerPriority.WARNING, "Message type not recognized. It won't be handled");
@@ -57,8 +51,8 @@ public class CallbacksEngine {
         switch (msg){
             case "JOIN_MESSAGE":
                 try {
-                    this.executor.addExecutor(fromAddress, 0);
-                    Message pongMessage = new PongMessage(this.executor.getNumberOfJobs());
+                    Executor.getIstance().addExecutor(fromAddress, 0);
+                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs());
                     SocketSenderUnicast.send(pongMessage, fromAddress, executorMain.executorsPort);
                 } catch (IOException | ClassNotFoundException e){
                     Logger.log(LoggerPriority.ERROR, "Error while sending back pong");
@@ -68,7 +62,7 @@ public class CallbacksEngine {
                 break;
 
             case "LEAVE_MESSAGE":
-                this.executor.removeExecutor(fromAddress);
+                Executor.getIstance().removeExecutor(fromAddress);
                 break;
 
             default:

@@ -26,9 +26,7 @@ public class executorMain  {
     public static void main(String[] args) throws Exception {
         Logger.log(LoggerPriority.NOTIFICATION, "I'm up");
 
-        Executor myself = new Executor();
-
-        SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort, myself);
+        SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort);
         sdr.start();
 
         SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
@@ -36,8 +34,6 @@ public class executorMain  {
 
         SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
         srToClient.start();
-
-        CallbacksEngine.getIstance().setExecutor(myself);
 
         Message msg = new JoinMessage();
         SocketBroadcaster.send(executorsPort, msg);
@@ -59,7 +55,7 @@ public class executorMain  {
         Integer choice;
         while (true){
             System.out.println( "***************************" +
-                    "\n   Number of active jobs: " + myself.getNumberOfJobs().toString() +
+                    "\n   Number of active jobs: " + Executor.getIstance().getNumberOfJobs().toString() +
                     "\n   Select: " +
                     "\n1) New job" +
                     "\n9) Exit" +
@@ -75,7 +71,7 @@ public class executorMain  {
                 case 1:
                     Job j = new Job(JobType.VERY_COMPLEX_JOB);
                     ProposeJobMessage pjm = new ProposeJobMessage(j);
-                    InetAddress a = myself.proposeJob();
+                    InetAddress a = Executor.getIstance().proposeJob();
                     SocketSenderUnicast.send(pjm, a, executorsPort);
                     break;
                 case 9:
