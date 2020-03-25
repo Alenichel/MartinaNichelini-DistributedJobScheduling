@@ -27,7 +27,7 @@ public class Job extends Thread implements Serializable {
 
         switch (this.type){
             case VERY_COMPLEX_JOB:
-                je = new VeryComplexJobExecutor();
+                je = new VeryComplexJobExecutor(this.id);
                 break;
             default:
                 Logger.log(LoggerPriority.ERROR, "Job type error");
@@ -62,15 +62,7 @@ public class Job extends Thread implements Serializable {
 
     public void setStatus(JobStatus status) { this.status = status;}
 
-    @Override
-    public void run() {
-        try {
-            je.execute();
-            Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: job with id " + id+ " correctly executed");
-            Executor e = Executor.getIstance();
-            e.jobCompleted(id);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public JobExecutor getJe() {
+        return je;
     }
 }

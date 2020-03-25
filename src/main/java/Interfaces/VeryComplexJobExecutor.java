@@ -1,20 +1,30 @@
 package Interfaces;
 
+import Enumeration.JobReturnValue;
 import Enumeration.LoggerPriority;
-import utils.Logger;
 
-import java.io.Serializable;
-import java.sql.Time;
+import utils.Logger;
+import utils.Pair;
+
 import java.util.concurrent.ThreadLocalRandom;
 
 public class VeryComplexJobExecutor extends JobExecutor {
 
     private Integer timer = ThreadLocalRandom.current().nextInt(1, 10 + 1);;
 
+    public VeryComplexJobExecutor(String jobID) {
+        super(jobID);
+    }
+
     @Override
-    public void execute() throws InterruptedException {
+    public Object call() {
         Logger.log(LoggerPriority.WARNING, "Job started: (" + timer + "s)");
-        Thread.sleep(timer * 1000);
-        //Logger.log(LoggerPriority.NOTIFICATION, "Job completed");
+        try {
+            Thread.sleep(timer * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return new Pair<String, JobReturnValue>(this.jobID, JobReturnValue.KO);
+        }
+        return new Pair<String, JobReturnValue>(this.jobID, JobReturnValue.OK);
     }
 }
