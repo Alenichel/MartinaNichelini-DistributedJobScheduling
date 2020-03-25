@@ -70,7 +70,7 @@ public class Executor {
     }
 
     public void acceptJob(Job job) throws InterruptedException {
-        Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getId() + ")");
+        Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
         this.numberOfJobs ++;
         this.jobs.offer(job);
     }
@@ -86,9 +86,8 @@ public class Executor {
             while (true){
                 try {
                     Job currentJob = (Job)jobs.take();
-                    Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: new job taken from the queue with id: " + currentJob.getId());
-                    currentJob.getJe().execute();
-                    Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: job with id " + currentJob.getId() + " correctly executed");
+                    Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: new job taken from the queue with id: " + currentJob.getID());
+                    currentJob.start();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

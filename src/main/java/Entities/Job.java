@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.UUID;
 
-public class Job implements Serializable {
+public class Job extends Thread implements Serializable {
     private Boolean isAssigned;
     private InetAddress executorAddress;
     private JobType type;
@@ -51,7 +51,7 @@ public class Job implements Serializable {
         return type;
     }
 
-    public String getId() {
+    public String getID() {
         return id;
     }
 
@@ -61,5 +61,15 @@ public class Job implements Serializable {
 
     public JobExecutor getJe() {
         return je;
+    }
+
+    @Override
+    public void run() {
+        try {
+            je.execute();
+            Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR_THREAD: job with id " + this.id+ " correctly executed");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
