@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.net.*;
 
 public class SocketBroadcaster {
-    public static void send(Integer port, Message msg) throws UnknownHostException, SocketException, IOException {
+    public static void send(Integer port, Message msg) throws IOException {
         DatagramSocket socket = new DatagramSocket();
         byte[] buf = new byte[1000];
         buf = msg.toString().getBytes();

@@ -5,11 +5,17 @@ import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
 import Interfaces.JobExecutor;
 
+import Messages.Message;
+import Messages.UpdateTableMessage;
+import Network.SocketBroadcaster;
+import Network.SocketSenderUnicast;
+import main.executorMain;
 import utils.Logger;
 import utils.NetworkUtilis;
 import utils.Pair;
 import utils.PrettyPrintingMap;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -55,8 +61,7 @@ public class Executor {
         } catch (UnknownHostException | SocketException e) {
             Logger.log(LoggerPriority.ERROR, "Unknown host encountered during initialization, continuing...");
         }
-
-        this.executorService = Executors.newFixedThreadPool(1);
+        this.executorService = Executors.newFixedThreadPool(2);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
         this.ct = new CallbackThread();
         this.ct.start();
@@ -97,22 +102,28 @@ public class Executor {
         return getMinKey(this.executorToJobs);
     }
 
-    public void acceptJob(Job job) throws InterruptedException {
+    public void acceptJob(Job job) {
         Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
 
         executorCompletionService.submit(job.getJe());
         job.setStatus(JobStatus.PENDING);
         this.idToJob.put(job.getID(), job);
-    }
+        this.numberOfJobs++;
 
-    public void jobCompleted(String id){
-        this.idToJob.get(id).setStatus(JobStatus.COMPLETED);
-        this.numberOfJobs--;
-        this.printState();
+        UpdateTableMessage msg = new UpdateTableMessage(this.numberOfJobs);
+        try {
+            SocketBroadcaster.send(executorMain.executorsPort, msg);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Integer getNumberOfJobs() {
         return numberOfJobs;
+    }
+
+    public synchronized Map<String, Job> getIdToJob() {
+        return idToJob;
     }
 
     private class CallbackThread extends Thread {
@@ -123,11 +134,17 @@ public class Executor {
             while (true){
                 try {
                     Pair<String, JobReturnValue> p = executorCompletionService.take().get();
-                    Logger.log(LoggerPriority.NOTIFICATION, "Process with id: " + p.first + " finished with code: " + p.second);
+                    Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + p.second);
                     idToJob.get(p.first).setStatus(JobStatus.COMPLETED);
+                    numberOfJobs--;
+                    printState();
+                    UpdateTableMessage msg = new UpdateTableMessage(numberOfJobs);
+                    SocketBroadcaster.send(executorMain.executorsPort, msg);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }

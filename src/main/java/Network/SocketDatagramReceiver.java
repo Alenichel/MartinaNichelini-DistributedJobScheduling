@@ -36,7 +36,6 @@ public class SocketDatagramReceiver  extends Thread  {
                 this.socket.receive(dgp);
                 String local = NetworkUtilis.getLocalAddress().getHostAddress();
                 String gotAddress = dgp.getAddress().getHostAddress();
-                Logger.log(LoggerPriority.NOTIFICATION, "My address is: " + local);
                 if ( ! local.equals(gotAddress) ){
                     Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Data received");
                     String content = new String(dgp.getData(), 0, dgp.getLength());

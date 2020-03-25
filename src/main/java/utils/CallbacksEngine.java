@@ -14,8 +14,7 @@ import main.executorMain;
 import java.io.IOException;
 import java.net.InetAddress;
 
-import static Enumeration.MessageType.PONG_MESSAGE;
-import static Enumeration.MessageType.PROPOSE_JOB;
+import static Enumeration.MessageType.*;
 
 public class CallbacksEngine {
 
@@ -42,6 +41,7 @@ public class CallbacksEngine {
                 Job j = ((ProposeJobMessage)msg).getJob();
                 Executor.getIstance().acceptJob(j);
                 break;
+
             default:
                 Logger.log(LoggerPriority.WARNING, "Message type not recognized. It won't be handled");
         }
@@ -63,6 +63,10 @@ public class CallbacksEngine {
 
             case "LEAVE_MESSAGE":
                 Executor.getIstance().removeExecutor(fromAddress);
+                break;
+
+            case "UPDATE_TABLE_MESSAGE":
+                Logger.log(LoggerPriority.NOTIFICATION, "Update table message arrived");
                 break;
 
             default:
