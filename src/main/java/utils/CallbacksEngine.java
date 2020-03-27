@@ -42,14 +42,7 @@ public class CallbacksEngine {
                 Executor.getIstance().acceptJob(j);
                 break;
 
-            default:
-                Logger.log(LoggerPriority.WARNING, "Message type not recognized. It won't be handled");
-        }
-    }
-
-    public void handleCallback(String msg, InetAddress fromAddress){
-        switch (msg){
-            case "JOIN_MESSAGE":
+            case JOIN_MESSAGE:
                 try {
                     Executor.getIstance().addExecutor(fromAddress, 0);
                     Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs());
@@ -61,15 +54,16 @@ public class CallbacksEngine {
                 }
                 break;
 
-            case "LEAVE_MESSAGE":
+            case LEAVE_MESSAGE:
                 Executor.getIstance().removeExecutor(fromAddress);
                 break;
 
-            case "UPDATE_TABLE_MESSAGE":
+            case UPDATE_TABLE_MESSAGE:
                 Logger.log(LoggerPriority.NOTIFICATION, "Update table message arrived");
                 break;
 
             default:
+                Logger.log(LoggerPriority.WARNING, "Message type not recognized. It won't be handled");
                 break;
         }
     }

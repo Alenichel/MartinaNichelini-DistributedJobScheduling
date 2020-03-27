@@ -10,7 +10,9 @@ import utils.Logger;
 import main.executorMain;
 import utils.NetworkUtilis;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -38,10 +40,12 @@ public class SocketDatagramReceiver  extends Thread  {
                 String gotAddress = dgp.getAddress().getHostAddress();
                 if ( ! local.equals(gotAddress) ){
                     Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Data received");
-                    String content = new String(dgp.getData(), 0, dgp.getLength());
-                    String rcvd = "DGR -> " + content + ", from address: " + dgp.getAddress() + ", port: " + dgp.getPort();
+                    ByteArrayInputStream bis = new ByteArrayInputStream(dgp.getData());
+                    ObjectInputStream ois = new ObjectInputStream(bis);
+                    Message msg = (Message) ois.readObject();
+                    String rcvd = "DGR -> Receive message of type: " + msg.getType() + " from address: " +  dgp.getAddress();
                     Logger.log(LoggerPriority.NOTIFICATION, rcvd);
-                    CallbacksEngine.getIstance().handleCallback(content, dgp.getAddress());
+                    CallbacksEngine.getIstance().handleCallback(msg, dgp.getAddress());
                 }
             }
         } catch (Exception e) {
