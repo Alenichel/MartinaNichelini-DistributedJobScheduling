@@ -1,0 +1,3 @@
+grant codeBase "file:/Users/alenichel/IdeaProjects/MartinaNichelini-DistributedJobScheduling/src/main/java" {
+    permission java.security.AllPermission;
+};

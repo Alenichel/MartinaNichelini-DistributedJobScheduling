@@ -12,7 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class VeryComplexJobExecutor extends JobExecutor {
 
-    private Integer timer = ThreadLocalRandom.current().nextInt(1, 10 + 1);;
+    private Integer timer = ThreadLocalRandom.current().nextInt(1, 10 + 1);
 
     public VeryComplexJobExecutor(String jobID) {
         super(jobID);
