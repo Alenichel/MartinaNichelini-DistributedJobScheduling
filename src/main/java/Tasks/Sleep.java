@@ -27,4 +27,9 @@ public class Sleep implements Task<JobReturnValue>, Serializable {
     public JobReturnValue execute() {
         return sleepTask();
     }
+
+    @Override
+    public String toString(){
+        return "SleepTask";
+    }
 }

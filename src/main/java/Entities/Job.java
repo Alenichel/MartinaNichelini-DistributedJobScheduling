@@ -2,10 +2,8 @@ package Entities;
 
 import Enumeration.JobStatus;
 import Enumeration.JobType;
-import Enumeration.LoggerPriority;
 import Interfaces.JobExecutor;
-import Interfaces.VeryComplexJobExecutor;
-import utils.Logger;
+import Interfaces.Task;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -19,7 +17,7 @@ public class Job extends Thread implements Serializable {
     private JobStatus status;
     private JobExecutor je;
 
-    public Job(JobType type) {
+    /*public Job(JobType type) {
         this.isAssigned = false;
         this.status = JobStatus.UNASSIGNED;
         this.type = type;
@@ -27,12 +25,21 @@ public class Job extends Thread implements Serializable {
 
         switch (this.type){
             case VERY_COMPLEX_JOB:
-                je = new VeryComplexJobExecutor(this.id);
+                je = new VeryComplexJobExecutor(this.id);//TODO
                 break;
             default:
                 Logger.log(LoggerPriority.ERROR, "Job type error");
                 break;
         }
+    }*/
+
+    public Job(Task task){
+        this.isAssigned = false;
+        this.status = JobStatus.UNASSIGNED;
+        this.type = type;
+        this.id = UUID.randomUUID().toString();
+
+        this.je = new JobExecutor(this.id, task);
     }
 
     public void setExecutor(InetAddress executorAddress) {
@@ -48,8 +55,8 @@ public class Job extends Thread implements Serializable {
         return isAssigned;
     }
 
-    public JobType getType() {
-        return type;
+    public String getType() {
+        return this.je.toString();
     }
 
     public String getID() {

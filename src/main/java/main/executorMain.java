@@ -11,7 +11,9 @@ import Network.SocketBroadcaster;
 import Network.SocketDatagramReceiver;
 import Network.SocketReceiver;
 import Network.SocketSenderUnicast;
+import Tasks.Pi;
 import utils.CallbacksEngine;
+import utils.ComputeEngine;
 import utils.Logger;
 import utils.NetworkUtilis;
 
@@ -51,6 +53,8 @@ public class executorMain  {
             }
         });
 
+        ComputeEngine.getIstance().startRMI();
+
         Scanner scanner = new Scanner(System.in);
         Integer choice;
         while (true){
@@ -69,7 +73,8 @@ public class executorMain  {
             }
             switch (choice){
                 case 1:
-                    Job j = new Job(JobType.VERY_COMPLEX_JOB);
+                    Pi pi = new Pi(10);
+                    Job j = new Job(pi);
                     ProposeJobMessage pjm = new ProposeJobMessage(j);
                     InetAddress a = Executor.getIstance().proposeJob();
                     SocketSenderUnicast.send(pjm, a, executorsPort);
@@ -80,23 +85,6 @@ public class executorMain  {
                     break;
             }
         }
-
-        //SocketReceiver sm = new SocketReceiver();
-        //sm.start();
-
-
-
-
-
-        // inviare una richiesta in broacast
-        // gestire risposte e costruire lo stato
-
-
-        /*
-        Lo stato di un executor cambia quando riceve un update da un altro executor.
-
-        Quando un client fa una richiesta, l'executor interroga gli altri colleghi.
-         */
     }
 
 }

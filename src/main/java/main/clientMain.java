@@ -17,9 +17,9 @@ public class clientMain {
         }*/
         try {
             String name = "Compute";
-            Registry registry = LocateRegistry.getRegistry("localhost");
+            Registry registry = LocateRegistry.getRegistry("localhost");        //TODO
             Compute comp = (Compute) registry.lookup(name);
-            Pi task = new Pi(Integer.parseInt("100000"));
+            Pi task = new Pi(Integer.parseInt("50000"));
             BigDecimal pi = comp.executeTask(task);
             System.out.println(pi);
         } catch (Exception e) {

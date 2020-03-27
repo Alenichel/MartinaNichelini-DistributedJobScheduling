@@ -127,8 +127,6 @@ public class Executor {
     }
 
     private class CallbackThread extends Thread {
-        private ArrayList<Job> executionQueue = new ArrayList<Job>();
-
         @Override
         public void run() {
             while (true){
