@@ -2,19 +2,15 @@ package utils;
 
 import Entities.Executor;
 import Entities.Job;
-import Enumeration.JobType;
 import Enumeration.LoggerPriority;
-import Enumeration.MessageType;
 import Messages.Message;
 import Messages.PongMessage;
 import Messages.ProposeJobMessage;
 import Network.SocketSenderUnicast;
-import main.executorMain;
+import Main.ExecutorMain;
 
 import java.io.IOException;
 import java.net.InetAddress;
-
-import static Enumeration.MessageType.*;
 
 public class CallbacksEngine {
 
@@ -46,7 +42,7 @@ public class CallbacksEngine {
                 try {
                     Executor.getIstance().addExecutor(fromAddress, 0);
                     Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs());
-                    SocketSenderUnicast.send(pongMessage, fromAddress, executorMain.executorsPort);
+                    SocketSenderUnicast.send(pongMessage, fromAddress, ExecutorMain.executorsPort);
                 } catch (IOException | ClassNotFoundException e){
                     Logger.log(LoggerPriority.ERROR, "Error while sending back pong");
                     System.out.println(e.toString());

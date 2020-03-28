@@ -1,6 +1,5 @@
 package Tasks;
 
-import Interfaces.Task;
 import java.io.Serializable;
 import java.math.BigDecimal;
 

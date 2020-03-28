@@ -2,8 +2,7 @@ package Entities;
 
 import Enumeration.JobStatus;
 import Enumeration.JobType;
-import Interfaces.JobExecutor;
-import Interfaces.Task;
+import Tasks.Task;
 
 import java.io.Serializable;
 import java.net.InetAddress;

@@ -3,13 +3,10 @@ package Entities;
 import Enumeration.JobReturnValue;
 import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
-import Interfaces.JobExecutor;
 
-import Messages.Message;
 import Messages.UpdateTableMessage;
 import Network.SocketBroadcaster;
-import Network.SocketSenderUnicast;
-import main.executorMain;
+import Main.ExecutorMain;
 import utils.Logger;
 import utils.NetworkUtilis;
 import utils.Pair;
@@ -19,7 +16,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionService;
@@ -112,7 +108,7 @@ public class Executor {
 
         UpdateTableMessage msg = new UpdateTableMessage(this.numberOfJobs);
         try {
-            SocketBroadcaster.send(executorMain.executorsPort, msg);
+            SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -137,7 +133,7 @@ public class Executor {
                     numberOfJobs--;
                     printState();
                     UpdateTableMessage msg = new UpdateTableMessage(numberOfJobs);
-                    SocketBroadcaster.send(executorMain.executorsPort, msg);
+                    SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (ExecutionException e) {

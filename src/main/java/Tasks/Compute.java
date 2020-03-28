@@ -1,4 +1,6 @@
-package Interfaces;
+package Tasks;
+
+import Tasks.Task;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

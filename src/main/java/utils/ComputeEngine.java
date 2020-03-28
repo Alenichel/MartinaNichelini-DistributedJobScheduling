@@ -3,11 +3,10 @@ package utils;
 import Entities.Executor;
 import Entities.Job;
 import Enumeration.LoggerPriority;
-import Interfaces.Compute;
-import Interfaces.Task;
+import Tasks.Compute;
+import Tasks.Task;
 import Messages.ProposeJobMessage;
 import Network.SocketSenderUnicast;
-import Tasks.Pi;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,7 +15,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import static main.executorMain.executorsPort;
+import static Main.ExecutorMain.executorsPort;
 
 public class ComputeEngine implements Compute {
 
@@ -58,9 +57,9 @@ public class ComputeEngine implements Compute {
         try {
             String name = "Compute";
             Compute engine = new ComputeEngine();
-            Compute stub =
-                    (Compute) UnicastRemoteObject.exportObject(engine, 0);
-            Registry registry = LocateRegistry.getRegistry();
+            Compute stub = (Compute) UnicastRemoteObject.exportObject(engine, 0);
+            //Registry registry = LocateRegistry.getRegistry();
+            Registry registry = LocateRegistry.createRegistry(1099);
             registry.rebind(name, stub);
             Logger.log(LoggerPriority.NOTIFICATION, "ComputeEngine bound");
         } catch (Exception e) {

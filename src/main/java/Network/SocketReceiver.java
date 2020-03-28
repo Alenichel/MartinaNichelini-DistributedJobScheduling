@@ -1,10 +1,9 @@
 package Network;
 
 import Enumeration.LoggerPriority;
-import Enumeration.MessageType;
 import Enumeration.SocketReceiverType;
 import Messages.Message;
-import main.executorMain;
+import Main.ExecutorMain;
 import utils.CallbacksEngine;
 import utils.Logger;
 
@@ -21,10 +20,10 @@ public class SocketReceiver extends Thread {
     public SocketReceiver(SocketReceiverType type){
         this.stype = type;
         if (stype.equals(SocketReceiverType.TO_CLIENT)){
-            this.port = executorMain.clientsPort;
+            this.port = ExecutorMain.clientsPort;
         }
         if (stype.equals(SocketReceiverType.TO_EXECUTOR)){
-            this.port = executorMain.executorsPort;
+            this.port = ExecutorMain.executorsPort;
         }
     }
 

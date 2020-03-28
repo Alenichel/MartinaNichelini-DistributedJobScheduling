@@ -1,10 +1,8 @@
-package main;
+package Main;
 
 import Entities.Executor;
 import Entities.Job;
-import Enumeration.JobType;
 import Enumeration.LoggerPriority;
-import Enumeration.MessageType;
 import Enumeration.SocketReceiverType;
 import Messages.*;
 import Network.SocketBroadcaster;
@@ -12,16 +10,13 @@ import Network.SocketDatagramReceiver;
 import Network.SocketReceiver;
 import Network.SocketSenderUnicast;
 import Tasks.Pi;
-import utils.CallbacksEngine;
 import utils.ComputeEngine;
 import utils.Logger;
-import utils.NetworkUtilis;
 
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Scanner;
 
-public class executorMain  {
+public class ExecutorMain {
     public static Integer clientsPort = 9669;
     public static Integer executorsPort = 9670;
 

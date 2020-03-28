@@ -1,12 +1,11 @@
-package Interfaces;
+package Entities;
 
 import Enumeration.JobReturnValue;
-import Enumeration.JobType;
+import Tasks.Task;
 import utils.Pair;
 
 import java.io.Serializable;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 
 public class JobExecutor implements Serializable, Callable {
 

@@ -1,7 +1,6 @@
 package Tasks;
 
 import Enumeration.JobReturnValue;
-import Interfaces.Task;
 
 import java.io.Serializable;
 import java.util.concurrent.ThreadLocalRandom;
