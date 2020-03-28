@@ -51,12 +51,8 @@ public class Executor {
         this.numberOfJobs = 0;
         this.executorToJobs = new HashMap<InetAddress, Integer>();
         this.idToJob = new HashMap<String, Job>();
-        try {
-            this.address = NetworkUtilis.getLocalAddress();
-            this.executorToJobs.put(this.address, 0);
-        } catch (UnknownHostException | SocketException e) {
-            Logger.log(LoggerPriority.ERROR, "Unknown host encountered during initialization, continuing...");
-        }
+        this.address = NetworkUtilis.getLocalAddress();
+        this.executorToJobs.put(this.address, 0);
         this.executorService = Executors.newFixedThreadPool(2);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
         this.ct = new CallbackThread();
@@ -86,7 +82,7 @@ public class Executor {
         int minValue = Integer.MAX_VALUE;
         for(InetAddress key : map.keySet()) {
             int value = map.get(key);
-            if(value < minValue && !key.equals(this.address)) {
+            if(value < minValue) {
                 minValue = value;
                 minKey = key;
             }

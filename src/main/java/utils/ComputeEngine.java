@@ -35,18 +35,19 @@ public class ComputeEngine implements Compute {
     }
 
     @Override
-    public <T> T executeTask(Task<T> t) throws RemoteException {
-        Job j = new Job(t);
-        ProposeJobMessage pjm = new ProposeJobMessage(j);
-        InetAddress a = Executor.getIstance().proposeJob();
-        try {
-            SocketSenderUnicast.send(pjm, a, executorsPort);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+    public <T> String executeTask(Task<T> t) throws RemoteException {
+        Job job = new Job(t);
+        ProposeJobMessage pjm = new ProposeJobMessage(job);
+        InetAddress address = Executor.getIstance().proposeJob();
+        InetAddress localAddress = NetworkUtilis.getLocalAddress();
+        if (address.equals(localAddress)){
+            Executor.getIstance().acceptJob(job);
+        } else {
+            try {
+                SocketSenderUnicast.send(pjm, address, executorsPort);
+            } catch (IOException | ClassNotFoundException e) { e.printStackTrace(); }
         }
-        return t.execute();
+        return job.getID();
     }
 
     public void startRMI() {
