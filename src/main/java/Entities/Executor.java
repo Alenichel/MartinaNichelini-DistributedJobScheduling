@@ -14,8 +14,6 @@ import utils.PrettyPrintingMap;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionService;
@@ -31,7 +29,7 @@ public class Executor {
     private Map<InetAddress, Integer> executorToJobs;
 
     private java.util.concurrent.Executor executorService;
-    private CompletionService<Pair<String, JobReturnValue>> executorCompletionService;
+    private CompletionService<Pair<String, Object>> executorCompletionService;
     private CallbackThread ct;
 
 
@@ -97,7 +95,7 @@ public class Executor {
     public void acceptJob(Job job) {
         Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
 
-        executorCompletionService.submit(job.getJe());
+        executorCompletionService.submit(job.getJobExecutor());
         job.setStatus(JobStatus.PENDING);
         this.idToJob.put(job.getID(), job);
         this.numberOfJobs++;
@@ -127,18 +125,15 @@ public class Executor {
         public void run() {
             while (true){
                 try {
-                    Pair<String, JobReturnValue> p = executorCompletionService.take().get();
-                    Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + p.second);
+                    Pair<String, Object> p = executorCompletionService.take().get();
+                    Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + JobReturnValue.OK);
                     idToJob.get(p.first).setStatus(JobStatus.COMPLETED);
+                    idToJob.get(p.first).setResult(p.second);
                     numberOfJobs--;
                     printState();
                     UpdateTableMessage msg = new UpdateTableMessage(numberOfJobs);
                     SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
+                } catch (InterruptedException | ExecutionException | IOException e) {
                     e.printStackTrace();
                 }
             }

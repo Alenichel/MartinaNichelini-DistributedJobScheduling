@@ -37,14 +37,16 @@ public class SocketReceiver extends Thread {
             ssocket = new ServerSocket(port);
             while (true) {
                 Socket socket = ssocket.accept();
+
+                OutputStream os = socket.getOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(os);
                 InputStream input = socket.getInputStream();
                 ObjectInputStream ois = new ObjectInputStream(input);
+
+
                 Object rcv = ois.readObject();
                 Logger.log(LoggerPriority.NOTIFICATION, "SR -> Received new message");
-                Logger.log(LoggerPriority.NOTIFICATION, "Received message of type: " +
-                        ((Message)rcv).getType().toString() +
-                        " by " + socket.getRemoteSocketAddress());
-                CallbacksEngine.getIstance().handleCallback(rcv, socket.getInetAddress());
+                CallbacksEngine.getIstance().handleCallback(rcv, socket.getInetAddress(), oos);
                 socket.close();
             }
         } catch (IOException | ClassNotFoundException | InterruptedException e) {

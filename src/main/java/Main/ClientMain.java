@@ -1,17 +1,15 @@
 package Main;
 
+import java.math.BigDecimal;
 import java.net.InetAddress;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.math.BigDecimal;
 import java.util.Scanner;
 
-import Entities.Executor;
-import Entities.Job;
 import Enumeration.LoggerPriority;
-import Messages.ProposeJobMessage;
+import Enumeration.TaskType;
+import Messages.ResultRequestMessage;
+import Messages.ResultResponseMessage;
 import Network.SocketSenderUnicast;
 import Tasks.Compute;
 import Tasks.Pi;
@@ -26,11 +24,16 @@ public class ClientMain {
 
         Scanner scanner = new Scanner(System.in);
         Logger.log(LoggerPriority.NORMAL, "I'm up and running");
-        Logger.log(LoggerPriority.NORMAL, "Please write down the address of the executor you want to connect. Blank for localhost");
+        /*Logger.log(LoggerPriority.NORMAL, "Please write down the address of the executor you want to connect. Blank for localhost");
         String host = scanner.nextLine();
-        host = host.equals("") ? "localhost" : host;
+        host = host.equals("") ? "127.0.0.1" : host;*(
+
+         */
+
+        String host = "127.0.0.1";
 
         Registry registry = null;
+
         try {
             registry = LocateRegistry.getRegistry(host);
             Compute comp = (Compute) registry.lookup(name);
@@ -40,6 +43,8 @@ public class ClientMain {
             while (true){
                 System.out.println( "***************************" +
                         "\n1) Send pi task" +
+                        "\n2) Send sleep task" +
+                        "\n3) Request return value" +
                         "\n9) Exit" +
                         "\n***************************");
                 String tokens[] = scanner.nextLine().split("");
@@ -50,10 +55,21 @@ public class ClientMain {
 
                 switch (choice){
                     case 1:
-                        Pi task = new Pi(Integer.parseInt("100000"));
+                        Pi task = new Pi(Integer.parseInt("50000"));
                         String id = null;
                         id = comp.executeTask(task);
                         System.out.println("The job with id: " + id + " was accepted");
+                        break;
+                    case 3:
+                        Logger.log(LoggerPriority.NORMAL,"Insert job id:");
+                        String jobId = scanner.nextLine();
+                        ResultRequestMessage rrm = new ResultRequestMessage(jobId);
+                        ResultResponseMessage rsp = (ResultResponseMessage) SocketSenderUnicast.sendAndWaitResponse(rrm, InetAddress.getByName(host), ExecutorMain.clientsPort);
+                        Logger.log(LoggerPriority.NOTIFICATION, "Received response");
+
+                        Logger.log(LoggerPriority.NOTIFICATION, "Task status is: " + rsp.getJobStatus());
+                        //BigDecimal bd = (BigDecimal) rsp.getResult();
+                        Logger.log(LoggerPriority.NOTIFICATION, rsp.getResult().toString());
                         break;
                     case 9:
                         return;
@@ -61,9 +77,8 @@ public class ClientMain {
                         break;
                 }
             }
-        } catch (RemoteException | NotBoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 }

@@ -63,7 +63,6 @@ public class ExecutorMain {
             try {
                 choice = Integer.parseInt(tokens[0]);
             } catch (NumberFormatException e){
-                Logger.log(LoggerPriority.NOTIFICATION, "Not valid number");
                 continue;
             }
             switch (choice){
@@ -83,3 +82,5 @@ public class ExecutorMain {
     }
 
 }
+
+//TODO: valutare se distribuire i job

@@ -19,8 +19,9 @@ public class JobExecutor implements Serializable, Callable {
 
     @Override
     public Object call() {
-        this.task.execute();
-        return new Pair<String, JobReturnValue>(this.jobID, JobReturnValue.OK);
+        Object returned = this.task.execute();
+        return new Pair<String, Object>(this.jobID, returned);
+        //return new Pair<String, JobReturnValue>(this.jobID, JobReturnValue.OK);
     }
 
     @Override
