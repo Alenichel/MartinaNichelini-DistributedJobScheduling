@@ -30,7 +30,6 @@ public class Pi implements Task<BigDecimal>, Serializable {
      * Calculate pi.
      */
     public BigDecimal execute() {
-        System.out.println("tracchete");
         return computePi(digits);
     }
 

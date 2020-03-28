@@ -118,6 +118,10 @@ public class Executor {
         return idToJob;
     }
 
+    public synchronized void updateTable(InetAddress executor, Integer n){
+        this.executorToJobs.put(executor, n);
+    }
+
     private class CallbackThread extends Thread {
         @Override
         public void run() {

@@ -6,6 +6,7 @@ import Enumeration.LoggerPriority;
 import Messages.Message;
 import Messages.PongMessage;
 import Messages.ProposeJobMessage;
+import Messages.UpdateTableMessage;
 import Network.SocketSenderUnicast;
 import Main.ExecutorMain;
 
@@ -56,6 +57,8 @@ public class CallbacksEngine {
 
             case UPDATE_TABLE_MESSAGE:
                 Logger.log(LoggerPriority.NOTIFICATION, "Update table message arrived");
+                Integer nJobs = ((UpdateTableMessage)message).getnJobs();
+                Executor.getIstance().updateTable(fromAddress, nJobs);
                 break;
 
             default:
