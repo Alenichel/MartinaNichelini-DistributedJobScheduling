@@ -25,10 +25,12 @@ public final class Logger {
         else if (priority == LoggerPriority.WARNING){
             toLog = "[*] WARNING: " + toLog;
             System.out.println((char) 27 + "[33m" + toLog + (char) 27 + "[30m");
+            System.out.print("\u001b[0m");
         }
         else if (priority == LoggerPriority.ERROR){
             toLog = "[*] ERROR: " + toLog;
             System.out.println((char) 27 + "[31m"+ toLog + (char) 27 + "[30m");
+            System.out.print("\u001b[0m");
         }
         else if(priority == LoggerPriority.DEBUG && debugMode){
             toLog = "[*] DEBUG: " + toLog;

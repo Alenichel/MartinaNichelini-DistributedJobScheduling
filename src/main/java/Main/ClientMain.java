@@ -6,6 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
 
+import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
 import Enumeration.TaskType;
 import Messages.ResultRequestMessage;
@@ -55,7 +56,7 @@ public class ClientMain {
 
                 switch (choice){
                     case 1:
-                        Pi task = new Pi(Integer.parseInt("50000"));
+                        Pi task = new Pi(Integer.parseInt("500000"));
                         String id = null;
                         id = comp.executeTask(task);
                         System.out.println("The job with id: " + id + " was accepted");
@@ -69,7 +70,11 @@ public class ClientMain {
 
                         Logger.log(LoggerPriority.NOTIFICATION, "Task status is: " + rsp.getJobStatus());
                         //BigDecimal bd = (BigDecimal) rsp.getResult();
-                        Logger.log(LoggerPriority.NOTIFICATION, rsp.getResult().toString());
+                        if (rsp.getJobStatus() == JobStatus.COMPLETED){
+                            Logger.log(LoggerPriority.NOTIFICATION, rsp.getResult().toString());
+                        }
+
+
                         break;
                     case 9:
                         return;

@@ -24,7 +24,6 @@ import java.util.concurrent.Executors;
 
 public class Executor {
     private InetAddress address;
-    private Integer numberOfJobs;
     private Map<String, Job> idToJob;
     private Map<InetAddress, Integer> executorToJobs;
 
@@ -45,8 +44,6 @@ public class Executor {
     }
 
     public Executor() {
-
-        this.numberOfJobs = 0;
         this.executorToJobs = new HashMap<InetAddress, Integer>();
         this.idToJob = new HashMap<String, Job>();
         this.address = NetworkUtilis.getLocalAddress();
@@ -98,9 +95,9 @@ public class Executor {
         executorCompletionService.submit(job.getJobExecutor());
         job.setStatus(JobStatus.PENDING);
         this.idToJob.put(job.getID(), job);
-        this.numberOfJobs++;
+        incrementJobs();
 
-        UpdateTableMessage msg = new UpdateTableMessage(this.numberOfJobs);
+        UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs());
         try {
             SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
         } catch (IOException e) {
@@ -109,8 +106,12 @@ public class Executor {
     }
 
     public Integer getNumberOfJobs() {
-        return numberOfJobs;
+        return this.executorToJobs.get(this.address);
     }
+
+    private void incrementJobs(){ this.executorToJobs.put(this.address, this.getNumberOfJobs() + 1);}
+
+    private void decrementJobs(){ this.executorToJobs.put(this.address, this.getNumberOfJobs() - 1);}
 
     public synchronized Map<String, Job> getIdToJob() {
         return idToJob;
@@ -129,9 +130,9 @@ public class Executor {
                     Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + JobReturnValue.OK);
                     idToJob.get(p.first).setStatus(JobStatus.COMPLETED);
                     idToJob.get(p.first).setResult(p.second);
-                    numberOfJobs--;
+                    decrementJobs();
                     printState();
-                    UpdateTableMessage msg = new UpdateTableMessage(numberOfJobs);
+                    UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs());
                     SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
                 } catch (InterruptedException | ExecutionException | IOException e) {
                     e.printStackTrace();
