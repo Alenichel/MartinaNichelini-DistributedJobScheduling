@@ -56,7 +56,7 @@ public class ClientMain {
 
                 switch (choice){
                     case 1:
-                        Pi task = new Pi(Integer.parseInt("500000"));
+                        Pi task = new Pi(Integer.parseInt("100000"));
                         String id = null;
                         id = comp.executeTask(task);
                         System.out.println("The job with id: " + id + " was accepted");
@@ -73,8 +73,17 @@ public class ClientMain {
                         if (rsp.getJobStatus() == JobStatus.COMPLETED){
                             Logger.log(LoggerPriority.NOTIFICATION, rsp.getResult().toString());
                         }
-
-
+                        break;
+                    case 4:
+                        Integer i = 0;
+                        while (i < 7){
+                            Pi taskk = new Pi(Integer.parseInt("300000"));
+                            String idd = null;
+                            idd = comp.executeTask(taskk);
+                            System.out.println("The job with id: " + idd + " was accepted");
+                            i++;
+                            Thread.sleep(2000);
+                        }
                         break;
                     case 9:
                         return;

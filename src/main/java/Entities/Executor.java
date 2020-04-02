@@ -109,9 +109,15 @@ public class Executor {
         return this.executorToJobs.get(this.address);
     }
 
-    private void incrementJobs(){ this.executorToJobs.put(this.address, this.getNumberOfJobs() + 1);}
+    private void incrementJobs(){
+        this.executorToJobs.put(this.address, this.getNumberOfJobs() + 1);
+        printState();
+    }
 
-    private void decrementJobs(){ this.executorToJobs.put(this.address, this.getNumberOfJobs() - 1);}
+    private void decrementJobs(){
+        this.executorToJobs.put(this.address, this.getNumberOfJobs() - 1);
+        printState();
+    }
 
     public synchronized Map<String, Job> getIdToJob() {
         return idToJob;
@@ -142,7 +148,7 @@ public class Executor {
     }
 
 
-    private void printState(){
+    public void printState(){
         System.out.println("***************************");
         System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToJobs));
         System.out.println("***************************");

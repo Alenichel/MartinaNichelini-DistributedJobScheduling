@@ -45,7 +45,7 @@ public class SocketReceiver extends Thread {
 
 
                 Object rcv = ois.readObject();
-                Logger.log(LoggerPriority.NOTIFICATION, "SR -> Received new message");
+                Logger.log(LoggerPriority.DEBUG, "SR -> Received new message");
                 CallbacksEngine.getIstance().handleCallback(rcv, socket.getInetAddress(), oos);
                 socket.close();
             }

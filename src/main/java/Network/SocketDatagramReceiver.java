@@ -28,18 +28,18 @@ public class SocketDatagramReceiver  extends Thread  {
             byte[] buf = new byte[1000];
             DatagramPacket dgp = new DatagramPacket(buf, buf.length);
             this.socket = new DatagramSocket(this.listeningPort, InetAddress.getByName("0.0.0.0"));
-            Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Waiting for data");
+            Logger.log(LoggerPriority.DEBUG,"DGR -> Waiting for data");
             while (true) {
                 this.socket.receive(dgp);
                 String local = NetworkUtilis.getLocalAddress().getHostAddress();
                 String gotAddress = dgp.getAddress().getHostAddress();
                 if ( ! local.equals(gotAddress) ){
-                    Logger.log(LoggerPriority.NOTIFICATION,"DGR -> Data received");
+                    Logger.log(LoggerPriority.DEBUG,"DGR -> Data received");
                     ByteArrayInputStream bis = new ByteArrayInputStream(dgp.getData());
                     ObjectInputStream ois = new ObjectInputStream(bis);
                     Message msg = (Message) ois.readObject();
                     String rcvd = "DGR -> Receive message of type: " + msg.getType() + " from address: " +  dgp.getAddress();
-                    Logger.log(LoggerPriority.NOTIFICATION, rcvd);
+                    Logger.log(LoggerPriority.DEBUG, rcvd);
                     CallbacksEngine.getIstance().handleCallback(msg, dgp.getAddress());
                 }
             }

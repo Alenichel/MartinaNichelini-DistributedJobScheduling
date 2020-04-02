@@ -19,10 +19,10 @@ public class PrettyPrintingMap<K, V> {
         while (iter.hasNext()) {
             Map.Entry<K, V> entry = iter.next();
             sb.append(entry.getKey().toString().substring(1));
-            sb.append(" ====> ");
+            sb.append("\t====> ");
             sb.append(entry.getValue());
             if (iter.hasNext()) {
-                sb.append(',').append('\n');
+                sb.append('\n');
             }
         }
         return sb.toString();

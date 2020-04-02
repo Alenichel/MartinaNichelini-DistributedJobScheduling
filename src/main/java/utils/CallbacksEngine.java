@@ -65,6 +65,7 @@ public class CallbacksEngine {
             case UPDATE_TABLE_MESSAGE:
                 Integer nJobs = ((UpdateTableMessage)message).getnJobs();
                 Executor.getIstance().updateTable(fromAddress, nJobs);
+                Executor.getIstance().printState();
                 break;
 
             case RESULT_REQUEST_MESSAGE:
