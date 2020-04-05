@@ -71,24 +71,24 @@ public class ClientMain {
                             Logger.log(LoggerPriority.NOTIFICATION, "Received response");
 
                             Logger.log(LoggerPriority.NOTIFICATION, "Task status is: " + rsp.getJobStatus());
-
+                            Logger.log(LoggerPriority.NOTIFICATION, "Response lenght is: " + rsp.getResult().toString().length());
                             if (rsp.getJobStatus() == JobStatus.COMPLETED){
                                 Logger.log(LoggerPriority.NOTIFICATION, rsp.getResult().toString());
                             }
 
                         }catch (ClassCastException e){
-                            Logger.log(LoggerPriority.NOTIFICATION, "Unfortunately job has lost" );
+                            Logger.log(LoggerPriority.NOTIFICATION, "Request job doesn't not exist (or has been lost)" );
                         }
                         break;
                     case 4:
                         Integer i = 0;
                         while (i < 7){
-                            Pi taskk = new Pi(Integer.parseInt("300000"));
+                            Pi taskk = new Pi(i + 20000);
                             String idd = null;
                             idd = comp.executeTask(taskk);
                             System.out.println("The job with id: " + idd + " was accepted");
                             i++;
-                            Thread.sleep(2000);
+                            Thread.sleep(100);
                         }
                         break;
                     case 9:

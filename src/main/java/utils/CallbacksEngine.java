@@ -73,14 +73,14 @@ public class CallbacksEngine {
                 ResultRequestMessage rrm = (ResultRequestMessage)message;
                 String id = rrm.getJobId();
                 Map<String, Job> jobs = Executor.getIstance().getIdToJob();
-
-                // Socket
+                // Directly respond if you have the result
                 if (jobs.containsKey(id)) {
                     Job js = jobs.get(id);
                     IKnowMessage rrm_toSend = new IKnowMessage(js.getStatus(), js.getResult());
                     oos.writeObject(rrm_toSend);
                     oos.close();
                 }
+                // Respond with the address of the owner if you know it
                 else if (Executor.getIstance().getForeignCompletedJobs().containsKey(id)){
                     ResultRequestMessage rrm_toSend = new ResultRequestMessage(id, true);
                     InetAddress ia = Executor.getIstance().getForeignCompletedJobs().get(id);
@@ -89,36 +89,39 @@ public class CallbacksEngine {
                     oos.close();
                 }
                 else {
-                    // From executor to executor request
+                    //If you know nothing (like JS) just say it
                     if( rrm.getForwared() ){
                         IDontKnowMessage idkm = new IDontKnowMessage();
                         oos.writeObject(idkm);
                         oos.close();
                     } else {
+                        // if you still have to handle the request (the client asked to you)
                         ResultRequestMessage rrm_toSend = new ResultRequestMessage(id, true);
 
                         Set<InetAddress> addresses = Executor.getIstance().getExecutorToNumberOfJobs().keySet();
-
+                        addresses.remove(Executor.getIstance().getAddress());
                         for (InetAddress r_ia : addresses){
                             Message m =  SocketSenderUnicast.sendAndWaitResponse(rrm_toSend, r_ia, ExecutorMain.executorsPort);
                             if (m instanceof IKnowMessage) {
                                 IKnowMessage ikm = (IKnowMessage) m;
-                                if (ikm.getJobStatus() == null){    //Executor has NOT the result, it will send you the owner address
+                                //Contacted executor knows the address of the owner, you ask him
+                                if (ikm.getJobStatus() == null){
                                     InetAddress ia = ikm.getActualOwner();
                                     ResultRequestMessage f_rrm = new ResultRequestMessage(id, true);
                                     Message fm = SocketSenderUnicast.sendAndWaitResponse(f_rrm, ia, ExecutorMain.executorsPort);
                                     oos.writeObject(fm);
                                     oos.close();
                                     return;
-                                } else {        //Executor has the result
+                                } else {        //Contacted executor directly has the result
                                     oos.writeObject(m);
                                     oos.close();
                                     return;
                                 }
-                            } else if (m instanceof IDontKnowMessage){
+                            } else if (m instanceof IDontKnowMessage){  //if conctacted executor does know nothing, just skip to the next in line
                                 continue;
                             }
                         }
+                        //if no executor knows the result, surrender
                         IDontKnowMessage idkm = new IDontKnowMessage();
                         oos.writeObject(idkm);
                         oos.close();
