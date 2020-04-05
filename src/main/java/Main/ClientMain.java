@@ -9,6 +9,7 @@ import java.util.Scanner;
 import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
 import Enumeration.TaskType;
+import Messages.IKnowMessage;
 import Messages.ResultRequestMessage;
 import Messages.ResultResponseMessage;
 import Network.SocketSenderUnicast;
@@ -56,7 +57,7 @@ public class ClientMain {
 
                 switch (choice){
                     case 1:
-                        Pi task = new Pi(Integer.parseInt("100000"));
+                        Pi task = new Pi(Integer.parseInt("10000"));
                         String id = null;
                         id = comp.executeTask(task);
                         System.out.println("The job with id: " + id + " was accepted");
@@ -64,14 +65,19 @@ public class ClientMain {
                     case 3:
                         Logger.log(LoggerPriority.NORMAL,"Insert job id:");
                         String jobId = scanner.nextLine();
-                        ResultRequestMessage rrm = new ResultRequestMessage(jobId);
-                        ResultResponseMessage rsp = (ResultResponseMessage) SocketSenderUnicast.sendAndWaitResponse(rrm, InetAddress.getByName(host), ExecutorMain.clientsPort);
-                        Logger.log(LoggerPriority.NOTIFICATION, "Received response");
+                        ResultRequestMessage rrm = new ResultRequestMessage(jobId, false);
+                        try {
+                            IKnowMessage rsp = (IKnowMessage) SocketSenderUnicast.sendAndWaitResponse(rrm, InetAddress.getByName(host), ExecutorMain.clientsPort);
+                            Logger.log(LoggerPriority.NOTIFICATION, "Received response");
 
-                        Logger.log(LoggerPriority.NOTIFICATION, "Task status is: " + rsp.getJobStatus());
-                        //BigDecimal bd = (BigDecimal) rsp.getResult();
-                        if (rsp.getJobStatus() == JobStatus.COMPLETED){
-                            Logger.log(LoggerPriority.NOTIFICATION, rsp.getResult().toString());
+                            Logger.log(LoggerPriority.NOTIFICATION, "Task status is: " + rsp.getJobStatus());
+
+                            if (rsp.getJobStatus() == JobStatus.COMPLETED){
+                                Logger.log(LoggerPriority.NOTIFICATION, rsp.getResult().toString());
+                            }
+
+                        }catch (ClassCastException e){
+                            Logger.log(LoggerPriority.NOTIFICATION, "Unfortunately job has lost" );
                         }
                         break;
                     case 4:

@@ -25,7 +25,9 @@ import java.util.concurrent.Executors;
 public class Executor {
     private InetAddress address;
     private Map<String, Job> idToJob;
-    private Map<InetAddress, Integer> executorToJobs;
+    private Map<InetAddress, Integer> executorToNumberOfJobs;
+
+    private Map<String, InetAddress> foreignCompletedJobs;
 
     private java.util.concurrent.Executor executorService;
     private CompletionService<Pair<String, Object>> executorCompletionService;
@@ -44,10 +46,11 @@ public class Executor {
     }
 
     public Executor() {
-        this.executorToJobs = new HashMap<InetAddress, Integer>();
+        this.executorToNumberOfJobs = new HashMap<InetAddress, Integer>();
         this.idToJob = new HashMap<String, Job>();
         this.address = NetworkUtilis.getLocalAddress();
-        this.executorToJobs.put(this.address, 0);
+        this.executorToNumberOfJobs.put(this.address, 0);
+        this.foreignCompletedJobs = new HashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(2);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
         this.ct = new CallbackThread();
@@ -55,16 +58,16 @@ public class Executor {
     }
 
     public synchronized void addExecutor(InetAddress address, Integer jobs){
-        if (!this.executorToJobs.containsKey(address)) {
-            this.executorToJobs.put(address, jobs);
+        if (!this.executorToNumberOfJobs.containsKey(address)) {
+            this.executorToNumberOfJobs.put(address, jobs);
         }
         printState();
     }
 
     public synchronized void removeExecutor(InetAddress addres){
-        executorToJobs.remove(addres);
+        executorToNumberOfJobs.remove(addres);
         System.out.println("***************************");
-        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToJobs));
+        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToNumberOfJobs));
         System.out.println("***************************");
     }
 
@@ -86,7 +89,7 @@ public class Executor {
     }
 
     public InetAddress proposeJob(){
-        return getMinKey(this.executorToJobs);
+        return getMinKey(this.executorToNumberOfJobs);
     }
 
     public void acceptJob(Job job) {
@@ -97,7 +100,7 @@ public class Executor {
         this.idToJob.put(job.getID(), job);
         incrementJobs();
 
-        UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs());
+        UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());
         try {
             SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
         } catch (IOException e) {
@@ -105,17 +108,21 @@ public class Executor {
         }
     }
 
+    public Map<InetAddress, Integer> getExecutorToNumberOfJobs() { return executorToNumberOfJobs; }
+
     public Integer getNumberOfJobs() {
-        return this.executorToJobs.get(this.address);
+        return this.executorToNumberOfJobs.get(this.address);
     }
 
+    public Map<String, InetAddress> getForeignCompletedJobs() { return foreignCompletedJobs; }
+
     private void incrementJobs(){
-        this.executorToJobs.put(this.address, this.getNumberOfJobs() + 1);
+        this.executorToNumberOfJobs.put(this.address, this.getNumberOfJobs() + 1);
         printState();
     }
 
     private void decrementJobs(){
-        this.executorToJobs.put(this.address, this.getNumberOfJobs() - 1);
+        this.executorToNumberOfJobs.put(this.address, this.getNumberOfJobs() - 1);
         printState();
     }
 
@@ -124,7 +131,7 @@ public class Executor {
     }
 
     public synchronized void updateTable(InetAddress executor, Integer n){
-        this.executorToJobs.put(executor, n);
+        this.executorToNumberOfJobs.put(executor, n);
     }
 
     private class CallbackThread extends Thread {
@@ -138,7 +145,7 @@ public class Executor {
                     idToJob.get(p.first).setResult(p.second);
                     decrementJobs();
                     printState();
-                    UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs());
+                    UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), idToJob.get(p.first).getID());
                     SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
                 } catch (InterruptedException | ExecutionException | IOException e) {
                     e.printStackTrace();
@@ -150,7 +157,7 @@ public class Executor {
 
     public void printState(){
         System.out.println("***************************");
-        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToJobs));
+        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToNumberOfJobs));
         System.out.println("***************************");
     }
 
