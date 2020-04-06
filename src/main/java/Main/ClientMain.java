@@ -27,13 +27,9 @@ public class ClientMain {
 
         Scanner scanner = new Scanner(System.in);
         Logger.log(LoggerPriority.NORMAL, "I'm up and running");
-        /*Logger.log(LoggerPriority.NORMAL, "Please write down the address of the executor you want to connect. Blank for localhost");
+        Logger.log(LoggerPriority.NORMAL, "Please write down the address of the executor you want to connect. Blank for localhost");
         String host = scanner.nextLine();
-        host = host.equals("") ? "127.0.0.1" : host;*(
-
-         */
-
-        String host = "127.0.0.1";
+        host = host.equals("") ? "127.0.0.1" : host;
 
         Registry registry = null;
 

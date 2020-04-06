@@ -9,6 +9,7 @@ import Main.ExecutorMain;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,13 @@ public class CallbacksEngine {
 
     public void handleCallback(Object msg, InetAddress fromAddress) throws InterruptedException, IOException, ClassNotFoundException {
         handleCallback(msg, fromAddress, null);
+    }
+
+
+    private void sendDKM(ObjectOutputStream oos) throws IOException {
+        IDontKnowMessage idkm = new IDontKnowMessage();
+        oos.writeObject(idkm);
+        oos.close();
     }
 
     public void handleCallback(Object msg, InetAddress fromAddress, ObjectOutputStream oos) throws InterruptedException, IOException, ClassNotFoundException {
@@ -75,25 +83,31 @@ public class CallbacksEngine {
                 Map<String, Job> jobs = Executor.getIstance().getIdToJob();
                 // Directly respond if you have the result
                 if (jobs.containsKey(id)) {
+                    Logger.log(LoggerPriority.DEBUG, "RESULT_REQUEST_MESSAGE_HANDLER: Contacted executor is the owner of the job, now answering");
                     Job js = jobs.get(id);
                     IKnowMessage rrm_toSend = new IKnowMessage(js.getStatus(), js.getResult());
                     oos.writeObject(rrm_toSend);
                     oos.close();
                 }
-                // Respond with the address of the owner if you know it
+                // Directly contact the owner of the job if know it
                 else if (Executor.getIstance().getForeignCompletedJobs().containsKey(id)){
-                    ResultRequestMessage rrm_toSend = new ResultRequestMessage(id, true);
-                    InetAddress ia = Executor.getIstance().getForeignCompletedJobs().get(id);
-                    Message m = SocketSenderUnicast.sendAndWaitResponse(rrm_toSend, ia, ExecutorMain.executorsPort);
-                    oos.writeObject(m);
-                    oos.close();
+                    try {
+                        Logger.log(LoggerPriority.DEBUG, "RESULT_REQUEST_MESSAGE_HANDLER: Contacted executor knew the job's owner, it's now directly contacting it.");
+                        ResultRequestMessage rrm_toSend = new ResultRequestMessage(id, true);
+                        InetAddress ia = Executor.getIstance().getForeignCompletedJobs().get(id);
+                        Message m = SocketSenderUnicast.sendAndWaitResponse(rrm_toSend, ia, ExecutorMain.executorsPort);
+                        oos.writeObject(m);
+                        oos.close();
+                    } catch (ConnectException e) {
+                        Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: Contacted owner did not respond. This exception has been handled");
+                        sendDKM(oos);
+                    }
                 }
                 else {
-                    //If you know nothing (like JS) just say it
+                    //If you know nothing (like JS) just say it (and this message has been already forwarded)
                     if( rrm.getForwared() ){
-                        IDontKnowMessage idkm = new IDontKnowMessage();
-                        oos.writeObject(idkm);
-                        oos.close();
+                        Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: This executor has been asked for a job result, but it didn't know anything");
+                        sendDKM(oos);
                     } else {
                         // if you still have to handle the request (the client asked to you)
                         ResultRequestMessage rrm_toSend = new ResultRequestMessage(id, true);
@@ -106,12 +120,19 @@ public class CallbacksEngine {
                                 IKnowMessage ikm = (IKnowMessage) m;
                                 //Contacted executor knows the address of the owner, you ask him
                                 if (ikm.getJobStatus() == null){
-                                    InetAddress ia = ikm.getActualOwner();
-                                    ResultRequestMessage f_rrm = new ResultRequestMessage(id, true);
-                                    Message fm = SocketSenderUnicast.sendAndWaitResponse(f_rrm, ia, ExecutorMain.executorsPort);
-                                    oos.writeObject(fm);
-                                    oos.close();
-                                    return;
+                                    try {
+                                        InetAddress ia = ikm.getActualOwner();
+                                        ResultRequestMessage f_rrm = new ResultRequestMessage(id, true);
+                                        Message fm = SocketSenderUnicast.sendAndWaitResponse(f_rrm, ia, ExecutorMain.executorsPort);
+                                        oos.writeObject(fm);
+                                        oos.close();
+                                        Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: contacted owner did answer with the result. Forwarded to client");
+                                        return;
+                                    } catch (ConnectException e){
+                                        Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: Contacted owner did not respond. This exception has been handled");
+                                        sendDKM(oos);
+                                        return;
+                                    }
                                 } else {        //Contacted executor directly has the result
                                     oos.writeObject(m);
                                     oos.close();
@@ -122,9 +143,7 @@ public class CallbacksEngine {
                             }
                         }
                         //if no executor knows the result, surrender
-                        IDontKnowMessage idkm = new IDontKnowMessage();
-                        oos.writeObject(idkm);
-                        oos.close();
+                        sendDKM(oos);
                     }
 
 
@@ -136,4 +155,5 @@ public class CallbacksEngine {
                 break;
         }
     }
+
 }

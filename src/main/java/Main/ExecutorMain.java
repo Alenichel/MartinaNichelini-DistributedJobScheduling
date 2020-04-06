@@ -85,6 +85,3 @@ public class ExecutorMain {
     }
 
 }
-
-//TODO: valutare se distribuire i job
-//TODO: cosa succede se un executor esce con pending jobs ? 
