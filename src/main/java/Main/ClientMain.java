@@ -19,6 +19,7 @@ import utils.Logger;
 
 public class ClientMain {
     public static void main(String args[]) {
+        System.setProperty("java.net.preferIPv4Stack", "true");
         /*if (System.getSecurityManager() == null) {
             System.setSecurityManager(new SecurityManager());
         }*/

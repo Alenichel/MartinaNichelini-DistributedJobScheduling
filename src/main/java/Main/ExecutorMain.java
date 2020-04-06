@@ -5,10 +5,7 @@ import Entities.Job;
 import Enumeration.LoggerPriority;
 import Enumeration.SocketReceiverType;
 import Messages.*;
-import Network.SocketBroadcaster;
-import Network.SocketDatagramReceiver;
-import Network.SocketReceiver;
-import Network.SocketSenderUnicast;
+import Network.*;
 import Tasks.Pi;
 import utils.ComputeEngine;
 import utils.Logger;
@@ -19,11 +16,15 @@ import java.util.Scanner;
 public class ExecutorMain {
     public static Integer clientsPort = 9669;
     public static Integer executorsPort = 9670;
+    public static Integer multicastPort = 6789;
 
     public static void main(String[] args) throws Exception {
+        System.setProperty("java.net.preferIPv4Stack", "true");
+
         Logger.log(LoggerPriority.NOTIFICATION, "I'm up");
 
         SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort);
+        //MulticastReceiver sdr = new MulticastReceiver();
         sdr.start();
 
         SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
@@ -34,6 +35,7 @@ public class ExecutorMain {
 
         Message msg = new JoinMessage();
         SocketBroadcaster.send(executorsPort, msg);
+        //MulticastPublisher.send(msg);
 
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
@@ -44,6 +46,7 @@ public class ExecutorMain {
                 try {
                     Message lmsg = new LeaveMessage();
                     SocketBroadcaster.send(executorsPort, lmsg);
+                    //MulticastPublisher.send(lmsg);
                 } catch (Exception e) {}
             }
         });

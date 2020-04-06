@@ -5,6 +5,7 @@ import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
 
 import Messages.UpdateTableMessage;
+import Network.MulticastPublisher;
 import Network.SocketBroadcaster;
 import Main.ExecutorMain;
 import utils.Logger;
@@ -103,6 +104,7 @@ public class Executor {
         UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());
         try {
             SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
+            //MulticastPublisher.send(msg);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -147,6 +149,7 @@ public class Executor {
                     printState();
                     UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), idToJob.get(p.first).getID());
                     SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
+                    //MulticastPublisher.send(msg);
                 } catch (InterruptedException | ExecutionException | IOException e) {
                     e.printStackTrace();
                 }
