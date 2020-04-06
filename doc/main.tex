@@ -22,16 +22,19 @@
 \documentclass{article}
 
 \input{structure.tex} % Include the file specifying the document structure and custom commands
+\usepackage{hyperref}
 
 %----------------------------------------------------------------------------------------
 %	ASSIGNMENT INFORMATION
 %----------------------------------------------------------------------------------------
 
-\title{PHYS101: Assignment \#2} % Title of the assignment
+\title{Distributed System:\\ Distributed Job Scheduluing project report} % Title of the assignment
 
 \author{Yukiko Amagi\\ \texttt{y.amagi@inabauniversity.jp}} % Author name and email address
+\author{Stefano Martina\\ \texttt{stefano.martina@mail.polimi.it}
+		\\\\Alessandro Nichelini\\ \texttt{alessandro.nichelini@mail.polimi.it} }
 
-\date{University of Inaba --- \today} % University, school and/or department name(s) and a date
+\date{Politecnico di Milano\\\today} % University, school and/or department name(s) and a date
 
 %----------------------------------------------------------------------------------------
 
@@ -43,20 +46,71 @@
 %	INTRODUCTION
 %----------------------------------------------------------------------------------------
 
-\section*{Introduction} % Unnumbered section
+\section*{Abstract} % Unnumbered section
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent porttitor arcu luctus, imperdiet urna iaculis, mattis eros. Pellentesque iaculis odio vel nisl ullamcorper, nec faucibus ipsum molestie. Sed dictum nisl non aliquet porttitor. Etiam vulputate arcu dignissim, finibus sem et, viverra nisl. Aenean luctus congue massa, ut laoreet metus ornare in. Nunc fermentum nisi imperdiet lectus tincidunt vestibulum at ac elit. Nulla mattis nisl eu malesuada suscipit.
+This document's aim is to describe the main engineering choice we took during the development of the project.
 
-% Math equation/formula
-\begin{equation}
-	I = \int_{a}^{b} f(x) \; \text{d}x.
-\end{equation}
+\section*{Assignment}
+Implement an infrastructure to manage jobs submitted to a cluster of Executors. Each client may submit a job to any of the executors receiving a job id as a return value. Through such job id, clients may check (contacting the same  executor  they  submitted  the  job  to)  if  the  job  has  been  executed  and  may  retrieve  back  the  results produced by the job.
+Executors  communicate  and  coordinate  among  themselves  in  order  to  share  load  such  that  at  each  time  every Executor  is  running  the  same  number  of  jobs  (or  a  number  as  close  as  possible  to  that).  Assume  links  are reliable but processes (i.e., Executors) may fail (and resume back, re-joining the system immediately after). Choose the strategy you find more appropriate to organize communication and coordination. Use stable storage to cope with failures of Executors.
+Implement  the  system  in  Java  (or  any  other  language  you  choose)  only  using  basic  communication  facilities (i.e.,  sockets  and  RMI,  in  case  of  Java).  Alternatively,  implement  the  system  in  OMNeT++,  using  an appropriate, abstract model for the system (including the jobs themselves).
 
-Aliquam arcu turpis, ultrices sed luctus ac, vehicula id metus. Morbi eu feugiat velit, et tempus augue. Proin ac mattis tortor. Donec tincidunt, ante rhoncus luctus semper, arcu lorem lobortis justo, nec convallis ante quam quis lectus. Aenean tincidunt sodales massa, et hendrerit tellus mattis ac. Sed non pretium nibh. Donec cursus maximus luctus. Vivamus lobortis eros et massa porta porttitor.
+\section*{Overview}
+\begin{info}
+	The project source code is accessible at the following link: \href{https://github.com/Alenichel/MartinaNichelini-DistributedJobScheduling}{https://github.com/Alenichel/MartinaNichelini-DistributedJobScheduling} and it's entirely written in Java 8 using only basic communication facilities.
 
+\end{info}
+
+\paragraph{System description}
+The main behavioural aspects are listed below:
+\begin{itemize}
+	
+	\item The system is composed by clients and executors. They respectively refer to the \href{https://github.com/Alenichel/MartinaNichelini-DistributedJobScheduling/blob/master/src/main/java/Main/ClientMain.java}{ClientMain.java} and the \href{https://github.com/Alenichel/MartinaNichelini-DistributedJobScheduling/blob/master/src/main/java/Main/ExecutorMain.java}{ExecutorMain.java} implementation files. There is no limit to the number of them.
+	\item There is not a hierarchy between executors, they join the executors "network" by auto-discovering all other running executors.
+	\item All executors can be contacted by clients. A client needs to know the address of a executor to be able to connect.
+	\item The system uses both UDP and TCP sockets for communications between executors and it exploits broadcast UDP packets for auto-discovering. Thus the system is able to run in local networks inside a single broadcast domain.
+	\item Communication between the client and executor uses RMI and TCP sockets.
+	\item A client can ask the executor to run a job. It is given with a job id for results retrieval.	
+	\item The client can submit jobs that implements the \href{https://github.com/Alenichel/MartinaNichelini-DistributedJobScheduling/blob/master/src/main/java/Tasks/Task.java}{Task/Task.java} interface.
+
+\begin{file}[Task/Task.java]
+\begin{lstlisting}[language=Java]
+package Tasks;
+
+public interface Task<T> {
+    T execute();
+}
+\end{lstlisting}
+\end{file}
+	\item New job requests are collected by the connected executor and forwarded to the executor with the shortest job queue. Executors are multithreading, by default they handle two jobs at a time.
+	\item The client can ask for job result at any time and to any executor: if the job has been completed, the result will be provided, otherwise the client will be notified about the actual job status.
+	\item Job results are kept only by the actual executors. All others have a reference to it.
+
+		
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\newpage
 \begin{info} % Information block
 	This is an interesting piece of information, to which the reader should pay special attention. Fusce varius orci ac magna dapibus porttitor. In tempor leo a neque bibendum sollicitudin. Nulla pretium fermentum nisi, eget sodales magna facilisis eu. Praesent aliquet nulla ut bibendum lacinia. Donec vel mauris vulputate, commodo ligula ut, egestas orci. Suspendisse commodo odio sed hendrerit lobortis. Donec finibus eros erat, vel ornare enim mattis et.
 \end{info}
+
+
 
 %----------------------------------------------------------------------------------------
 %	PROBLEM 1
