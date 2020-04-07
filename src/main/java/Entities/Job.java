@@ -31,14 +31,6 @@ public class Job extends Thread implements Serializable {
         this.executorAddress = executorAddress;
     }
 
-    public InetAddress getExecutorAddress() {
-        return executorAddress;
-    }
-
-    public Boolean getAssigned() {
-        return isAssigned;
-    }
-
     public String getType() {
         return this.je.toString();
     }

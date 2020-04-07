@@ -1,6 +1,7 @@
 package Main;
 
 import java.math.BigDecimal;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -68,7 +69,7 @@ public class ClientMain {
                             Logger.log(LoggerPriority.NOTIFICATION, "Received response");
 
                             Logger.log(LoggerPriority.NOTIFICATION, "Task status is: " + rsp.getJobStatus());
-                            Logger.log(LoggerPriority.NOTIFICATION, "Response lenght is: " + rsp.getResult().toString().length());
+                            Logger.log(LoggerPriority.NOTIFICATION, "Response lenght is: " + (rsp.getResult().toString().length() -2));
                             if (rsp.getJobStatus() == JobStatus.COMPLETED){
                                 Logger.log(LoggerPriority.NOTIFICATION, rsp.getResult().toString());
                             }
@@ -94,6 +95,9 @@ public class ClientMain {
                         break;
                 }
             }
+        } catch (ConnectException e){
+            Logger.log(LoggerPriority.WARNING, "Server is now offline. Quitting..");
+            return;
         } catch (Exception e) {
             e.printStackTrace();
         }
