@@ -5,7 +5,6 @@ import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
 
 import Messages.UpdateTableMessage;
-import Network.MulticastPublisher;
 import Network.SocketBroadcaster;
 import Main.ExecutorMain;
 import utils.*;
@@ -15,7 +14,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionService;
@@ -49,7 +47,7 @@ public class Executor {
 
     public Executor() {
         this.executorToNumberOfJobs = new HashMap<InetAddress, Integer>();
-        this.idToJob = new StendusHashMap<String, Job>();
+        this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.pathToArchiveDir);
         this.address = NetworkUtilis.getLocalAddress();
         this.executorToNumberOfJobs.put(this.address, 0);
         this.foreignCompletedJobs = new HashMap<String, InetAddress>();
@@ -147,7 +145,7 @@ public class Executor {
                     Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + JobReturnValue.OK);
                     idToJob.get(p.first).setStatus(JobStatus.COMPLETED);
                     idToJob.get(p.first).setResult(p.second);
-                    ((StendusHashMap)idToJob).updateOnFile(p.first);         //black magic
+                    ((LazyHashMap)idToJob).updateOnFile(p.first);         //black magic
                     decrementJobs();
                     printState();
                     UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), idToJob.get(p.first).getID());

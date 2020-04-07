@@ -10,9 +10,8 @@ import java.util.Scanner;
 import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
 import Enumeration.TaskType;
-import Messages.IKnowMessage;
-import Messages.ResultRequestMessage;
-import Messages.ResultResponseMessage;
+import Messages.*;
+import Network.SocketBroadcaster;
 import Network.SocketSenderUnicast;
 import Tasks.Compute;
 import Tasks.Pi;
@@ -31,6 +30,15 @@ public class ClientMain {
         Logger.log(LoggerPriority.NORMAL, "Please write down the address of the executor you want to connect. Blank for localhost");
         String host = scanner.nextLine();
         host = host.equals("") ? "127.0.0.1" : host;
+
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            @Override
+            public void run()
+            {
+                Logger.log(LoggerPriority.NORMAL, "Shutdown");
+            }
+        });
 
         Registry registry = null;
 
@@ -55,7 +63,7 @@ public class ClientMain {
 
                 switch (choice){
                     case 1:
-                        Pi task = new Pi(Integer.parseInt("10000"));
+                        Pi task = new Pi(Integer.parseInt("200000"));
                         String id = null;
                         id = comp.executeTask(task);
                         System.out.println("The job with id: " + id + " was accepted");

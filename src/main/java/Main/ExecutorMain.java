@@ -17,6 +17,7 @@ public class ExecutorMain {
     public static Integer clientsPort = 9669;
     public static Integer executorsPort = 9670;
     public static Integer multicastPort = 6789;
+    public static String pathToArchiveDir = "src/main/java/ser/";
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.net.preferIPv4Stack", "true");

@@ -1,33 +1,36 @@
 package utils;
 
+import Entities.Job;
+import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
 
 import java.io.*;
 import java.util.HashMap;
 
-public class StendusHashMap<K, V> extends HashMap<K, V> {
+public class LazyHashMap<K, V> extends HashMap<K, V> {
 
-    private static final String path = "src/main/java/ser/";
+    private String path;
 
-    public StendusHashMap(){
+    public LazyHashMap(String pathToArchiveDir){
         super();
         this.loadKeySet();
+        this.path = pathToArchiveDir;
     }
 
     @Override
     public V get(Object key){
-        if (!super.containsKey(key)){
+        if (!super.containsKey(key)){               // if the Hashmap does not have that key element, returns null
             return null;
         }
 
-        if (super.get((V)key) != null ){
+        if (super.get((V)key) != null ){            // if the Hashmap has the actual value, returns that value
             return super.get(key);
         }
-        else {
+        else {                                      // if the Hashmap has just a placeholder, gets the actual value from file
             try {
                 V obj = loadFromFile((K)key);
                 return obj;
-            } catch (Exception e)  {
+            } catch (Exception e)  {                // in case of error, returns null
                 Logger.log(LoggerPriority.ERROR, "Error while loading from file");
                 return null;
             }
@@ -41,8 +44,8 @@ public class StendusHashMap<K, V> extends HashMap<K, V> {
         return value;
     }
 
-    private void loadKeySet(){
-        File dir = new File(path);
+    private void loadKeySet(){                      // it iterates over all filenames and it puts a couple (key, value)
+        File dir = new File(path);                  //  in it's own data structure
         File[] directoryListing = dir.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
@@ -51,9 +54,15 @@ public class StendusHashMap<K, V> extends HashMap<K, V> {
         }
     }
 
-    private void saveToFile(K key, V value ){
+    private void saveToFile(K key, V value){
         try {
-            String filename = path + key.toString();
+            String filename = path;
+            /*if ( ((Job)value).getStatus() == JobStatus.PENDING ){
+                filename += ("PENDING_" + key);
+            } else {
+                filename +=  key;
+            }*/
+            filename += key;
             FileOutputStream fos = new FileOutputStream(filename);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(value);
@@ -73,9 +82,10 @@ public class StendusHashMap<K, V> extends HashMap<K, V> {
         file.createNewFile();
         FileInputStream fis = new FileInputStream(file);
         ObjectInputStream ois = new ObjectInputStream(fis);
-        V value = (V) ois.readObject();
+        V value = (V)ois.readObject();
         ois.close();
         fis.close();
+        Logger.log(LoggerPriority.DEBUG, "Successfully load from file Job with id: " + key.toString());
         return value;
     }
 
