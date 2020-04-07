@@ -10,8 +10,12 @@ import Network.SocketBroadcaster;
 import Main.ExecutorMain;
 import utils.*;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionService;
@@ -53,6 +57,7 @@ public class Executor {
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
         this.ct = new CallbackThread();
         this.ct.start();
+        //this.runUncompletedJobs();
     }
 
     public synchronized void addExecutor(InetAddress address, Integer jobs){
@@ -155,11 +160,57 @@ public class Executor {
         }
     }
 
-
     public void printState(){
         System.out.println("***************************");
         System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToNumberOfJobs));
         System.out.println("***************************");
     }
+
+    private Job loadFromFile(String key) throws IOException, ClassNotFoundException {
+        String path = "src/main/java/ser/";
+
+        String filename = path + key;
+        File file = new File(filename);
+        file.mkdirs();
+        file.createNewFile();
+        FileInputStream fis = new FileInputStream(file);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        Job value = (Job) ois.readObject();
+        ois.close();
+        fis.close();
+        return value;
+    }
+
+    /*private void runUncompletedJobs(){
+        String path = "src/main/java/ser/";
+
+        File dir = new File(path);
+        File[] directoryListing = dir.listFiles();
+        Job loadedJob;
+        ArrayList<File> toDelete = new ArrayList<>();
+        ArrayList<Job> toAccept = new ArrayList<>();
+        try {
+            if (directoryListing != null) {
+                for (File child : directoryListing) {
+                    if (child.getName().contains("PENDING_")) {
+                        loadedJob = loadFromFile(child.getName());
+                        toDelete.add(child);
+                        toAccept.add(loadedJob);
+                    }
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
+        for (File f: toDelete){
+            f.delete();
+        }
+
+        for (Job j: toAccept){
+            acceptJob(j);
+        }
+
+    }*/
 
 }
