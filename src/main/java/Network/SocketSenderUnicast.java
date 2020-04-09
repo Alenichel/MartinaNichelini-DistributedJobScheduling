@@ -9,6 +9,7 @@ public class SocketSenderUnicast {
 
     private static ObjectOutputStream buildOOS(InetAddress host, Integer port) throws IOException {
         Socket socket = new Socket(host, port);
+        socket.setSoTimeout(5*1000);
         OutputStream os  = socket.getOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(os);
         return oos;
@@ -23,6 +24,7 @@ public class SocketSenderUnicast {
 
     public static Message sendAndWaitResponse(Message message, InetAddress host, Integer port) throws IOException, ClassNotFoundException {
         Socket socket = new Socket(host, port);
+        socket.setSoTimeout(5*1000);
         OutputStream os = socket.getOutputStream();
         InputStream is = socket.getInputStream();
         ObjectOutputStream oos = new ObjectOutputStream(os);

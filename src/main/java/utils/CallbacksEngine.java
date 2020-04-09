@@ -73,6 +73,8 @@ public class CallbacksEngine {
                 } catch (IOException | ClassNotFoundException e){
                     Logger.log(LoggerPriority.ERROR, "Error while sending back pong");
                     e.printStackTrace();
+                    Executor.getIstance().removeExecutor(fromAddress);
+                    Logger.log(LoggerPriority.WARNING, "Faulty executor removed");
                 }
                 break;
 
