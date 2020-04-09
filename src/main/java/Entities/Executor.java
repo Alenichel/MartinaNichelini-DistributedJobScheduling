@@ -44,7 +44,7 @@ public class Executor {
         this.foreignCompletedJobs = new HashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
-        this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.pathToArchiveDir);
+        this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.relativePathToArchiveDir);
         this.runUncompletedJobs();
         this.ct = new CallbackThread();
         this.ct.start();
@@ -153,7 +153,7 @@ public class Executor {
     private void runUncompletedJobs(){
         ArrayList <Job> uncompletedJobs = new ArrayList<>();
         Logger.log(LoggerPriority.NOTIFICATION, "Recovering uncompleted jobs");
-        File dir = new File(ExecutorMain.pathToArchiveDir);
+        File dir = new File(ExecutorMain.relativePathToArchiveDir);
         File[] directoryListing = dir.listFiles();
         Job loadedJob;
         Integer counter = 0;

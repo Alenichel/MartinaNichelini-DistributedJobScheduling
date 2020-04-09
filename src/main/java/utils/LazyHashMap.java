@@ -56,7 +56,8 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
 
     private void saveToFile(K key, V value){
         try {
-            String filename = path;
+            String filename = System.getProperty("user.dir");
+            filename += path;
             if ( ((Job)value).getStatus() == JobStatus.PENDING ){               // if i'm saving a pending job
                 filename += ("PENDING_" + key);                                 // add a PENDING tag
             } else {                                                            // if i'm saving a completed job
@@ -73,6 +74,8 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
             Logger.log(LoggerPriority.DEBUG, "Successfully saved to file");
         } catch (IOException e) {
             Logger.log(LoggerPriority.ERROR, "Error during serialization");
+            Logger.log(LoggerPriority.ERROR, "Working Directory = " +
+                    System.getProperty("user.dir"));
             e.printStackTrace();
         }
     }

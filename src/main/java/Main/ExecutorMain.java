@@ -16,7 +16,7 @@ public class ExecutorMain {
     public static final Integer clientsPort = 9669;
     public static final Integer executorsPort = 9670;
     public static final Integer multicastPort = 6789;
-    public static final String pathToArchiveDir = "src/main/java/ser/";
+    public static final String relativePathToArchiveDir = "/ser/";
     public static final Integer nThreads = 2;
 
     public static void main(String[] args) throws Exception {
