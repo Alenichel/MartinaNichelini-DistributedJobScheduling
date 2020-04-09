@@ -14,7 +14,7 @@ public class MulticastPublisher {
 
     public static void send(Message msg) throws IOException {
         DatagramSocket socket = new DatagramSocket();
-        InetAddress group = InetAddress.getByName("230.0.0.0");
+        InetAddress group = InetAddress.getByName("228.5.6.7");
         byte[] buf;
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
