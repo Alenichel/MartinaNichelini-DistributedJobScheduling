@@ -2,6 +2,7 @@ package Main;
 
 import Entities.Executor;
 import Entities.Job;
+import Enumeration.BroadcastingType;
 import Enumeration.LoggerPriority;
 import Enumeration.SocketReceiverType;
 import Messages.*;
@@ -12,12 +13,24 @@ import utils.Logger;
 import java.net.InetAddress;
 import java.util.Scanner;
 
+import static java.lang.System.exit;
+
 public class ExecutorMain {
     public static final Integer clientsPort = 9669;
     public static final Integer executorsPort = 9670;
     public static final Integer multicastPort = 6789;
     public static final String relativePathToArchiveDir = "/ser/";
     public static final Integer nThreads = 2;
+
+    public static void shutdown(){
+        Logger.log(LoggerPriority.NORMAL, "Shutdown");
+        try {
+            Message lmsg = new LeaveMessage();
+            Broadcaster.getInstance().send(lmsg);
+            //MulticastPublisher.send(lmsg);
+            Executor.getIstance().saveKnownExecutors();
+        } catch (Exception e) {}
+    }
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -33,6 +46,7 @@ public class ExecutorMain {
         Logger.log(LoggerPriority.NOTIFICATION, "I'm up");
 
         Executor.getIstance();
+        Broadcaster.getInstance(BroadcastingType.GLOBAL_TCP);
 
         SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort);
         //MulticastReceiver sdr = new MulticastReceiver();
@@ -53,14 +67,8 @@ public class ExecutorMain {
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
             @Override
-            public void run()
-            {
-                Logger.log(LoggerPriority.NORMAL, "Shutdown");
-                try {
-                    Message lmsg = new LeaveMessage();
-                    Broadcaster.getInstance().send(lmsg);
-                    //MulticastPublisher.send(lmsg);
-                } catch (Exception e) {}
+            public void run() {
+                ExecutorMain.shutdown();
             }
         });
 
@@ -72,7 +80,7 @@ public class ExecutorMain {
             System.out.println( "***************************" +
                     "\n   Number of active jobs: " + Executor.getIstance().getNumberOfJobs().toString() +
                     "\n   Select: " +
-                    "\n1) New job" +
+                    //"\n1) New job" +
                     "\n9) Exit" +
                     "\n***************************");
             String tokens[] = scanner.nextLine().split("");
@@ -82,15 +90,15 @@ public class ExecutorMain {
                 continue;
             }
             switch (choice){
-                case 1:
+                /*case 1:
                     Pi pi = new Pi(10);
                     Job j = new Job(pi);
                     ProposeJobMessage pjm = new ProposeJobMessage(j);
                     InetAddress a = Executor.getIstance().proposeJob();
                     SocketSenderUnicast.send(pjm, a, executorsPort);
-                    break;
+                    break;*/
                 case 9:
-                    return;
+                    exit(0);
                 default:
                     break;
             }

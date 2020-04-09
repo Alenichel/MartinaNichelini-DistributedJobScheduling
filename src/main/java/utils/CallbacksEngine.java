@@ -11,8 +11,10 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class CallbacksEngine {
 
@@ -54,12 +56,15 @@ public class CallbacksEngine {
 
             case JOIN_MESSAGE:
                 try {
-                    Executor.getIstance().addExecutor(fromAddress, 0);
-                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs());
-                    SocketSenderUnicast.send(pongMessage, fromAddress, ExecutorMain.executorsPort);
+                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs(), Executor.getIstance().getExecutorToNumberOfJobs().keySet().stream().collect(Collectors.toList()));
+                    if (  ((JoinMessage)msg).getJustExploring()  ) {
+                        oos.writeObject(pongMessage);
+                    } else {
+                        Executor.getIstance().addExecutor(fromAddress, 0);
+                        SocketSenderUnicast.send(pongMessage, fromAddress, ExecutorMain.executorsPort);
+                    }
                 } catch (IOException | ClassNotFoundException e){
                     Logger.log(LoggerPriority.ERROR, "Error while sending back pong");
-                    System.out.println(e.toString());
                     e.printStackTrace();
                 }
                 break;
@@ -117,7 +122,7 @@ public class CallbacksEngine {
                         ResultRequestMessage rrm_toSend = new ResultRequestMessage(id, true);
 
                         Set<InetAddress> addresses = Executor.getIstance().getExecutorToNumberOfJobs().keySet();
-                        addresses.remove(Executor.getIstance().getAddress());
+                        addresses.remove(NetworkUtilis.getLocalAddress());
                         for (InetAddress r_ia : addresses){
                             Message m =  SocketSenderUnicast.sendAndWaitResponse(rrm_toSend, r_ia, ExecutorMain.executorsPort);
                             if (m instanceof IKnowMessage) {

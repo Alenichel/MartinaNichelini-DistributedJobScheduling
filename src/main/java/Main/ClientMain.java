@@ -91,7 +91,7 @@ public class ClientMain {
                         break;
                     case 4:
                         Integer i = 0;
-                        while (i < 7){
+                        while (i < 50){
                             Pi taskk = new Pi(i + 20000);
                             String idd = null;
                             idd = comp.executeTask(taskk);
@@ -108,6 +108,7 @@ public class ClientMain {
             }
         } catch (ConnectException | java.rmi.ConnectException e){
             Logger.log(LoggerPriority.WARNING, "Server went offline. Quitting..");
+            e.printStackTrace();
             return;
         } catch (Exception e) {
             e.printStackTrace();
