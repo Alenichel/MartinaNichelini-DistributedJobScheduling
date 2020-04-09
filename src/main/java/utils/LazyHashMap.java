@@ -62,9 +62,9 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
                 filename += ("PENDING_" + key);                                 // add a PENDING tag
             } else {                                                            // if i'm saving a completed job
                 filename +=  key;
-                String pendingFilename = path + "PENDING_" + key.toString();    // before saving the new file
+                String pendingFilename = System.getProperty("user.dir") + path + "PENDING_" + key.toString();    // before saving the new file
                 File pendingFile = new File(pendingFilename);                   //   delete the old PENDING ONE
-                pendingFile.delete();
+                Boolean ack = pendingFile.delete();
             }
             FileOutputStream fos = new FileOutputStream(filename);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
