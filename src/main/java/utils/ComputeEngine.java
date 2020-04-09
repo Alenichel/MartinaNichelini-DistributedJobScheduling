@@ -3,12 +3,16 @@ package utils;
 import Entities.Executor;
 import Entities.Job;
 import Enumeration.LoggerPriority;
+import Main.ExecutorMain;
+import Messages.FallenExecutor;
+import Network.SocketBroadcaster;
 import Tasks.Compute;
 import Tasks.Task;
 import Messages.ProposeJobMessage;
 import Network.SocketSenderUnicast;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -43,9 +47,20 @@ public class ComputeEngine implements Compute {
         if (address.equals(localAddress)){
             Executor.getIstance().acceptJob(job);
         } else {
-            try {
-                SocketSenderUnicast.send(pjm, address, executorsPort);
-            } catch (IOException | ClassNotFoundException e) { e.printStackTrace(); }
+            while (true) {
+                try {
+                    SocketSenderUnicast.send(pjm, address, executorsPort);
+                    break;
+                } catch (ConnectException e) {
+                    Logger.log(LoggerPriority.WARNING, "Chosen executor seems to be offline. I will try with another one");
+                    SocketBroadcaster.send(executorsPort, new FallenExecutor(address));         // tell others
+                    Executor.getIstance().removeExecutor(address);
+                    address = Executor.getIstance().proposeJob();
+                    continue;
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return job.getID();
     }

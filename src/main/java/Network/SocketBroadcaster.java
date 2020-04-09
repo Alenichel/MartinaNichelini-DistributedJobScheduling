@@ -7,15 +7,19 @@ import java.io.ObjectOutputStream;
 import java.net.*;
 
 public class SocketBroadcaster {
-    public static void send(Integer port, Message msg) throws IOException {
-        DatagramSocket socket = new DatagramSocket();
-        byte[] buf;
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(msg);
-        oos.flush();
-        buf = bos.toByteArray();
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getByName("255.255.255.255"), port);
-        socket.send(packet);
+    public static void send(Integer port, Message msg) {
+        try {
+            DatagramSocket socket = new DatagramSocket();
+            byte[] buf;
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(msg);
+            oos.flush();
+            buf = bos.toByteArray();
+            DatagramPacket packet = new DatagramPacket(buf, buf.length, InetAddress.getByName("255.255.255.255"), port);
+            socket.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

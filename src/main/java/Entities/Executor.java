@@ -94,12 +94,9 @@ public class Executor {
         incrementJobs();
 
         UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());
-        try {
-            SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
-            //MulticastPublisher.send(msg);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
+        //MulticastPublisher.send(msg);
     }
 
     public Map<InetAddress, Integer> getExecutorToNumberOfJobs() { return executorToNumberOfJobs; }
@@ -143,7 +140,7 @@ public class Executor {
                     UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), idToJob.get(p.first).getID());
                     SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
                     //MulticastPublisher.send(msg);
-                } catch (InterruptedException | ExecutionException | IOException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
             }

@@ -106,8 +106,8 @@ public class ClientMain {
                         break;
                 }
             }
-        } catch (ConnectException e){
-            Logger.log(LoggerPriority.WARNING, "Server is now offline. Quitting..");
+        } catch (ConnectException | java.rmi.ConnectException e){
+            Logger.log(LoggerPriority.WARNING, "Server went offline. Quitting..");
             return;
         } catch (Exception e) {
             e.printStackTrace();
