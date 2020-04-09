@@ -63,7 +63,7 @@ public class ClientMain {
 
                 switch (choice){
                     case 1:
-                        Pi task = new Pi(Integer.parseInt("200000"));
+                        Pi task = new Pi(Integer.parseInt("80000"));
                         String id = null;
                         id = comp.executeTask(task);
                         System.out.println("The job with id: " + id + " was accepted");

@@ -3,17 +3,13 @@ package Entities;
 import Enumeration.JobReturnValue;
 import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
-
 import Messages.UpdateTableMessage;
 import Network.SocketBroadcaster;
 import Main.ExecutorMain;
 import utils.*;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionService;
@@ -21,18 +17,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 
-
 public class Executor {
     private InetAddress address;
-    private Map<String, Job> idToJob;                           // must be persistent
+    private Map<String, Job> idToJob;                                       // must be persistent
     private Map<InetAddress, Integer> executorToNumberOfJobs;
-
     private Map<String, InetAddress> foreignCompletedJobs;
-
     private java.util.concurrent.Executor executorService;
     private CompletionService<Pair<String, Object>> executorCompletionService;
     private CallbackThread ct;
-
 
     public static Executor instance = null;
 
@@ -47,15 +39,15 @@ public class Executor {
 
     public Executor() {
         this.executorToNumberOfJobs = new HashMap<InetAddress, Integer>();
-        this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.pathToArchiveDir);
         this.address = NetworkUtilis.getLocalAddress();
         this.executorToNumberOfJobs.put(this.address, 0);
         this.foreignCompletedJobs = new HashMap<String, InetAddress>();
-        this.executorService = Executors.newFixedThreadPool(2);
+        this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
+        this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.pathToArchiveDir);
+        this.runUncompletedJobs();
         this.ct = new CallbackThread();
         this.ct.start();
-        //this.runUncompletedJobs();
     }
 
     public synchronized void addExecutor(InetAddress address, Integer jobs){
@@ -158,57 +150,43 @@ public class Executor {
         }
     }
 
+    private void runUncompletedJobs(){
+        ArrayList <Job> uncompletedJobs = new ArrayList<>();
+        Logger.log(LoggerPriority.NOTIFICATION, "Recovering uncompleted jobs");
+        File dir = new File(ExecutorMain.pathToArchiveDir);
+        File[] directoryListing = dir.listFiles();
+        Job loadedJob;
+        Integer counter = 0;
+        if (directoryListing != null) {
+            for (File child : directoryListing) {
+                if (child.getName().contains("PENDING")){
+                    counter++;
+                    try {
+                        FileInputStream fis = new FileInputStream(child);
+                        ObjectInputStream ois = new ObjectInputStream(fis);
+                        loadedJob = (Job)ois.readObject();
+                    } catch (FileNotFoundException e){
+                        continue;
+                    } catch (IOException|ClassNotFoundException e) {
+                        e.printStackTrace();
+                        continue;
+                    }
+                    uncompletedJobs.add(loadedJob);
+                }
+            }
+        }
+        Logger.log(LoggerPriority.NOTIFICATION, "Found " + counter + " incompleted jobs");
+        for (Job job : uncompletedJobs) {
+            job.getJobExecutor().call();
+            job.setStatus(JobStatus.COMPLETED);
+            this.idToJob.put(job.getID(), job);
+        }
+        Logger.log(LoggerPriority.NOTIFICATION, "All uncompleted jobs have been executed");
+    }
+
     public void printState(){
         System.out.println("***************************");
         System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToNumberOfJobs));
         System.out.println("***************************");
     }
-
-    private Job loadFromFile(String key) throws IOException, ClassNotFoundException {
-        String path = "src/main/java/ser/";
-
-        String filename = path + key;
-        File file = new File(filename);
-        file.mkdirs();
-        file.createNewFile();
-        FileInputStream fis = new FileInputStream(file);
-        ObjectInputStream ois = new ObjectInputStream(fis);
-        Job value = (Job) ois.readObject();
-        ois.close();
-        fis.close();
-        return value;
-    }
-
-    /*private void runUncompletedJobs(){
-        String path = "src/main/java/ser/";
-
-        File dir = new File(path);
-        File[] directoryListing = dir.listFiles();
-        Job loadedJob;
-        ArrayList<File> toDelete = new ArrayList<>();
-        ArrayList<Job> toAccept = new ArrayList<>();
-        try {
-            if (directoryListing != null) {
-                for (File child : directoryListing) {
-                    if (child.getName().contains("PENDING_")) {
-                        loadedJob = loadFromFile(child.getName());
-                        toDelete.add(child);
-                        toAccept.add(loadedJob);
-                    }
-                }
-            }
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-
-        for (File f: toDelete){
-            f.delete();
-        }
-
-        for (Job j: toAccept){
-            acceptJob(j);
-        }
-
-    }*/
-
 }

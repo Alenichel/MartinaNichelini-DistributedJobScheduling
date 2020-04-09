@@ -13,8 +13,8 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
 
     public LazyHashMap(String pathToArchiveDir){
         super();
-        this.loadKeySet();
         this.path = pathToArchiveDir;
+        this.loadKeySet();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
     }
 
     private void loadKeySet(){                      // it iterates over all filenames and it puts a couple (key, value)
-        File dir = new File(path);                  //  in it's own data structure
+        File dir = new File(this.path);                  //  in it's own data structure
         File[] directoryListing = dir.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
@@ -57,12 +57,14 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
     private void saveToFile(K key, V value){
         try {
             String filename = path;
-            /*if ( ((Job)value).getStatus() == JobStatus.PENDING ){
-                filename += ("PENDING_" + key);
-            } else {
+            if ( ((Job)value).getStatus() == JobStatus.PENDING ){               // if i'm saving a pending job
+                filename += ("PENDING_" + key);                                 // add a PENDING tag
+            } else {                                                            // if i'm saving a completed job
                 filename +=  key;
-            }*/
-            filename += key;
+                String pendingFilename = path + "PENDING_" + key.toString();    // before saving the new file
+                File pendingFile = new File(pendingFilename);                   //   delete the old PENDING ONE
+                pendingFile.delete();
+            }
             FileOutputStream fos = new FileOutputStream(filename);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(value);

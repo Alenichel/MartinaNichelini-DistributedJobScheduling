@@ -14,15 +14,18 @@ import java.net.InetAddress;
 import java.util.Scanner;
 
 public class ExecutorMain {
-    public static Integer clientsPort = 9669;
-    public static Integer executorsPort = 9670;
-    public static Integer multicastPort = 6789;
-    public static String pathToArchiveDir = "src/main/java/ser/";
+    public static final Integer clientsPort = 9669;
+    public static final Integer executorsPort = 9670;
+    public static final Integer multicastPort = 6789;
+    public static final String pathToArchiveDir = "src/main/java/ser/";
+    public static final Integer nThreads = 2;
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
         Logger.log(LoggerPriority.NOTIFICATION, "I'm up");
+
+        Executor.getIstance();
 
         SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort);
         //MulticastReceiver sdr = new MulticastReceiver();
