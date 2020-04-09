@@ -117,7 +117,7 @@ public class Executor {
 
     private void decrementJobs(){
         this.executorToNumberOfJobs.put(this.address, this.getNumberOfJobs() - 1);
-        printState();
+        //printState();
     }
 
     public synchronized Map<String, Job> getIdToJob() {

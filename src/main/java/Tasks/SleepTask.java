@@ -7,14 +7,19 @@ import java.util.concurrent.ThreadLocalRandom;
 import static java.lang.Thread.sleep;
 
 
-public class Sleep implements Task<JobReturnValue>, Serializable {
+public class SleepTask implements Task<JobReturnValue>, Serializable {
 
     private static final long serialVersionUID = 227L;
+    private Integer waitingTime;
+
+    public SleepTask(){
+        this.waitingTime = ThreadLocalRandom.current().nextInt(1, 10 + 1);
+    }
 
     private JobReturnValue sleepTask(){
-        Integer timer = ThreadLocalRandom.current().nextInt(1, 10 + 1);
+
         try {
-            sleep(timer);
+            sleep(waitingTime);
             return JobReturnValue.OK;
         } catch (InterruptedException e) {
             e.printStackTrace();

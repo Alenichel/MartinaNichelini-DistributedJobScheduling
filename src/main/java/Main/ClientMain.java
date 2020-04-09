@@ -11,6 +11,7 @@ import Messages.*;
 import Network.SocketSenderUnicast;
 import Tasks.Compute;
 import Tasks.Pi;
+import Tasks.SleepTask;
 import utils.Logger;
 
 public class ClientMain {
@@ -59,10 +60,16 @@ public class ClientMain {
 
                 switch (choice){
                     case 1:
-                        Pi task = new Pi(Integer.parseInt("80000"));
-                        String id = null;
-                        id = comp.executeTask(task);
-                        System.out.println("The job with id: " + id + " was accepted");
+                        Pi piTask = new Pi(Integer.parseInt("80000"));
+                        String piId = null;
+                        piId = comp.executeTask(piTask);
+                        System.out.println("The job with id: " + piId + " was accepted");
+                        break;
+                    case 2:
+                        SleepTask sleepTask = new SleepTask();
+                        String sleepId = null;
+                        sleepId = comp.executeTask(sleepTask);
+                        System.out.println("The job with id: " + sleepId + " was accepted");
                         break;
                     case 3:
                         Logger.log(LoggerPriority.NORMAL,"Insert job id:");
@@ -75,7 +82,7 @@ public class ClientMain {
                             Logger.log(LoggerPriority.NOTIFICATION, "Task status is: " + rsp.getJobStatus());
                             Logger.log(LoggerPriority.NOTIFICATION, "Response lenght is: " + (rsp.getResult().toString().length() -2));
                             if (rsp.getJobStatus() == JobStatus.COMPLETED){
-                                Logger.log(LoggerPriority.NOTIFICATION, rsp.getResult().toString());
+                                Logger.log(LoggerPriority.NOTIFICATION, "Returned value is: " + rsp.getResult().toString());
                             }
 
                         }catch (ClassCastException e){
