@@ -22,6 +22,14 @@ public class ExecutorMain {
     public static void main(String[] args) throws Exception {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
+        String WD = System.getProperty("user.dir");
+        String repoRelativePath = "src/main/java";
+
+        if (!WD.substring(WD.length() - repoRelativePath.length()).equals(repoRelativePath)){
+            Logger.log(LoggerPriority.ERROR, "(fatal) Working Directory must be <relative_path_to_the_repo>/src/main/java");
+            return;
+        }
+
         Logger.log(LoggerPriority.NOTIFICATION, "I'm up");
 
         Executor.getIstance();

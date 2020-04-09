@@ -153,7 +153,7 @@ public class Executor {
     private void runUncompletedJobs(){
         ArrayList <Job> uncompletedJobs = new ArrayList<>();
         Logger.log(LoggerPriority.NOTIFICATION, "Recovering uncompleted jobs");
-        File dir = new File(ExecutorMain.relativePathToArchiveDir);
+        File dir = new File(System.getProperty("user.dir") + ExecutorMain.relativePathToArchiveDir);
         File[] directoryListing = dir.listFiles();
         Job loadedJob;
         Integer counter = 0;
