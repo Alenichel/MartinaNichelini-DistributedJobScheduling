@@ -2,10 +2,9 @@ package utils;
 
 
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.*;
 import java.util.Enumeration;
 import Enumeration.LoggerPriority;
 
@@ -29,6 +28,19 @@ public class NetworkUtilis {
             return InetAddress.getLocalHost();
         } catch (UnknownHostException | SocketException e) {
             Logger.log(LoggerPriority.ERROR, "It was impossible to retrieve the address");
+            return null;
+        }
+    }
+
+    public static InetAddress getExternalAddress() {
+        try {
+            URL whatismyip = new URL("http://checkip.amazonaws.com");
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    whatismyip.openStream()));
+
+            String ip = in.readLine(); //you get the IP as a String
+            return InetAddress.getByName(ip);
+        } catch (Exception e) {
             return null;
         }
     }

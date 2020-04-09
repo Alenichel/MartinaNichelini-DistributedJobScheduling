@@ -152,11 +152,14 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
                 line = br.readLine();
             }
 
+        } catch (UnknownHostException e) {
+
         } catch (IOException e) {
             Logger.log(LoggerPriority.ERROR, "(not fatal) error while opening know host file");
             e.printStackTrace();
             Logger.log(LoggerPriority.WARNING, "Continuing with just the host known so far");
             return;
         }
+
     }
 }

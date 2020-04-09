@@ -56,9 +56,16 @@ public class CallbacksEngine {
 
             case JOIN_MESSAGE:
                 try {
-                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs(), Executor.getIstance().getExecutorToNumberOfJobs().keySet().stream().collect(Collectors.toList()));
+                    Boolean toAdjust;
+                    if (fromAddress.isAnyLocalAddress()){
+                        toAdjust = false;
+                    } else {
+                        toAdjust = true;
+                    }
+                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs(), Executor.getIstance().getExecutorToNumberOfJobs().keySet().stream().collect(Collectors.toList()), toAdjust);
                     if (  ((JoinMessage)msg).getJustExploring()  ) {
                         oos.writeObject(pongMessage);
+                        Logger.log(LoggerPriority.NOTIFICATION, "Directly responded to exploring message.");
                     } else {
                         Executor.getIstance().addExecutor(fromAddress, 0);
                         SocketSenderUnicast.send(pongMessage, fromAddress, ExecutorMain.executorsPort);
