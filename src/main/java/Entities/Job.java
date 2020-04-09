@@ -1,9 +1,7 @@
 package Entities;
 
 import Enumeration.JobStatus;
-import Enumeration.TaskType;
 import Tasks.Task;
-
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.UUID;
@@ -11,7 +9,6 @@ import java.util.UUID;
 public class Job extends Thread implements Serializable {
     private Boolean isAssigned;
     private InetAddress executorAddress;
-    private TaskType type;
     private String id;
     private JobStatus status;
     private JobExecutor je;
@@ -20,15 +17,9 @@ public class Job extends Thread implements Serializable {
     public Job(Task task){
         this.isAssigned = false;
         this.status = JobStatus.UNASSIGNED;
-        this.type = type;
         this.id = UUID.randomUUID().toString();
 
         this.je = new JobExecutor(this.id, task);
-    }
-
-    public void setExecutor(InetAddress executorAddress) {
-        this.isAssigned = true;
-        this.executorAddress = executorAddress;
     }
 
     public String getType() {

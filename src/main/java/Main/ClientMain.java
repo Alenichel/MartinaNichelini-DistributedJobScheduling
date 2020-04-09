@@ -1,17 +1,13 @@
 package Main;
 
-import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Scanner;
-
 import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
-import Enumeration.TaskType;
 import Messages.*;
-import Network.SocketBroadcaster;
 import Network.SocketSenderUnicast;
 import Tasks.Compute;
 import Tasks.Pi;

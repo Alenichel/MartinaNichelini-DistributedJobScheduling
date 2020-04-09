@@ -1,7 +1,6 @@
 package Messages;
 
 import Enumeration.MessageType;
-
 import java.io.Serializable;
 
 public abstract class Message implements Serializable {

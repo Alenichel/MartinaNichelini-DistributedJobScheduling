@@ -1,7 +1,6 @@
 package Network;
 
 import Messages.Message;
-
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;

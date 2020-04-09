@@ -1,8 +1,6 @@
 package Network;
 
-import Enumeration.MessageType;
 import Messages.Message;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;

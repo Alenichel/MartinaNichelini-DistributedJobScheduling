@@ -1,9 +1,6 @@
 package Messages;
 
 import Enumeration.MessageType;
-import utils.Pair;
-
-import java.util.ArrayList;
 
 public class UpdateTableMessage extends Message{
 

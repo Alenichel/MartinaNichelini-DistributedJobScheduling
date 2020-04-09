@@ -2,7 +2,6 @@ package Messages;
 
 import Enumeration.JobStatus;
 import Enumeration.MessageType;
-
 import java.net.InetAddress;
 
 public class IKnowMessage extends ResultResponseMessage {

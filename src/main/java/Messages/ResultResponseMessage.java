@@ -1,8 +1,6 @@
 package Messages;
 
-import Enumeration.JobStatus;
 import Enumeration.MessageType;
-import Enumeration.TaskType;
 
 public class ResultResponseMessage extends Message {
 
