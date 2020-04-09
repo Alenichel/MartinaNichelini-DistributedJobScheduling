@@ -4,7 +4,8 @@ import Enumeration.JobReturnValue;
 import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
 import Messages.UpdateTableMessage;
-import Network.SocketBroadcaster;
+import Network.Broadcaster;
+import Network.SocketDatagramBroadcaster;
 import Main.ExecutorMain;
 import utils.*;
 import java.io.*;
@@ -37,7 +38,7 @@ public class Executor {
         return instance;
     }
 
-    public Executor() {
+    private Executor() {
         this.executorToNumberOfJobs = new HashMap<InetAddress, Integer>();
         this.address = NetworkUtilis.getLocalAddress();
         this.executorToNumberOfJobs.put(this.address, 0);
@@ -95,7 +96,7 @@ public class Executor {
 
         UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());
 
-        SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
+        Broadcaster.getInstance().send(msg);
         //MulticastPublisher.send(msg);
     }
 
@@ -138,7 +139,7 @@ public class Executor {
                     decrementJobs();
                     printState();
                     UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), idToJob.get(p.first).getID());
-                    SocketBroadcaster.send(ExecutorMain.executorsPort, msg);
+                    Broadcaster.getInstance().send(msg);
                     //MulticastPublisher.send(msg);
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();

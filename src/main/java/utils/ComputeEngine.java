@@ -3,9 +3,9 @@ package utils;
 import Entities.Executor;
 import Entities.Job;
 import Enumeration.LoggerPriority;
-import Main.ExecutorMain;
 import Messages.FallenExecutor;
-import Network.SocketBroadcaster;
+import Network.Broadcaster;
+import Network.SocketDatagramBroadcaster;
 import Tasks.Compute;
 import Tasks.Task;
 import Messages.ProposeJobMessage;
@@ -53,7 +53,7 @@ public class ComputeEngine implements Compute {
                     break;
                 } catch (ConnectException e) {
                     Logger.log(LoggerPriority.WARNING, "Chosen executor seems to be offline. I will try with another one");
-                    SocketBroadcaster.send(executorsPort, new FallenExecutor(address));         // tell others
+                    Broadcaster.getInstance().send(new FallenExecutor(address));         // tell others
                     Executor.getIstance().removeExecutor(address);
                     address = Executor.getIstance().proposeJob();
                     continue;

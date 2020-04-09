@@ -44,9 +44,11 @@ public class ExecutorMain {
         SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
         srToClient.start();
 
-        Message msg = new JoinMessage();
-        SocketBroadcaster.send(executorsPort, msg);
+        //Message msg = new JoinMessage();
+        //SocketDatagramBroadcaster.send(executorsPort, msg);
         //MulticastPublisher.send(msg);
+        Broadcaster.getInstance().sayHello();
+
 
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
@@ -56,7 +58,7 @@ public class ExecutorMain {
                 Logger.log(LoggerPriority.NORMAL, "Shutdown");
                 try {
                     Message lmsg = new LeaveMessage();
-                    SocketBroadcaster.send(executorsPort, lmsg);
+                    Broadcaster.getInstance().send(lmsg);
                     //MulticastPublisher.send(lmsg);
                 } catch (Exception e) {}
             }
