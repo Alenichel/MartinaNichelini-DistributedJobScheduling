@@ -90,9 +90,9 @@ public class Executor {
     public void acceptJob(Job job) {
         Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
 
-        executorCompletionService.submit(job);
         job.setStatus(JobStatus.PENDING);
         this.idToJob.put(job.getID(), job);
+        executorCompletionService.submit(job);
         incrementJobs();
 
         UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());

@@ -49,6 +49,7 @@ public class Job extends Thread implements Serializable, Callable {
 
     @Override
     public Object call() {
+        this.status = JobStatus.EXECUTION;
         Object returned = this.task.execute();
         return new Pair<String, Object>(this.id, returned);
     }
