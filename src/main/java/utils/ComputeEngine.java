@@ -3,6 +3,7 @@ package utils;
 import Entities.Executor;
 import Entities.Job;
 import Enumeration.LoggerPriority;
+import Main.ExecutorMain;
 import Messages.FallenExecutor;
 import Network.Broadcaster;
 import Network.SocketDatagramBroadcaster;
@@ -75,9 +76,9 @@ public class ComputeEngine implements Compute {
             Compute engine = new ComputeEngine();
             Compute stub = (Compute) UnicastRemoteObject.exportObject(engine, 0);
             //Registry registry = LocateRegistry.getRegistry();
-            Registry registry = LocateRegistry.createRegistry(1099);
+            Registry registry = LocateRegistry.createRegistry(ExecutorMain.RMIPort);
             registry.rebind(name, stub);
-            Logger.log(LoggerPriority.NOTIFICATION, "ComputeEngine bound");
+            Logger.log(LoggerPriority.DEBUG, "ComputeEngine bound");
         } catch (Exception e) {
             Logger.log(LoggerPriority.ERROR, "ComputeEngine exception:");
             e.printStackTrace();
