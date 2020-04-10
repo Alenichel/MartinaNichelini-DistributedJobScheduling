@@ -1,6 +1,7 @@
 package Messages;
 
 import Enumeration.MessageType;
+import Main.ExecutorMain;
 import utils.NetworkUtilis;
 
 import java.net.InetAddress;
@@ -24,7 +25,7 @@ public class PongMessage extends Message {
         for(InetAddress ia : knownHosts){
             if (ia.equals(NetworkUtilis.getLocalAddress())){
                 knownHosts.remove(ia);
-                knownHosts.add(NetworkUtilis.getExternalAddress());
+                knownHosts.add(ExecutorMain.externalIP);
             }
         }
     }

@@ -17,9 +17,7 @@ import utils.Logger;
 public class ClientMain {
     public static void main(String args[]) {
         System.setProperty("java.net.preferIPv4Stack", "true");
-        /*if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new SecurityManager());
-        }*/
+
         String name = "Compute";
 
         Scanner scanner = new Scanner(System.in);
@@ -92,7 +90,7 @@ public class ClientMain {
                     case 4:
                         Integer i = 0;
                         while (i < 50){
-                            Pi taskk = new Pi(i + 20000);
+                            Pi taskk = new Pi(i + 80000);
                             String idd = null;
                             idd = comp.executeTask(taskk);
                             System.out.println("The job with id: " + idd + " was accepted");

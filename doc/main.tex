@@ -66,7 +66,7 @@ The main behavioural aspects are listed below:
 \begin{itemize}
 	
 	\item The system is composed by clients and executors. They respectively refer to the \href{https://github.com/Alenichel/MartinaNichelini-DistributedJobScheduling/blob/master/src/main/java/Main/ClientMain.java}{ClientMain.java} and the \href{https://github.com/Alenichel/MartinaNichelini-DistributedJobScheduling/blob/master/src/main/java/Main/ExecutorMain.java}{ExecutorMain.java} implementation files. There is no limit to the number of them.
-	\item There is not a hierarchy between executors, they join the executors "network" by auto-discovering all other running executor
+	\item There is not a hierarchy between executors, they join the group by auto-discovering all other running executors in the same local network. Executors are also able to work within different networks. At startup time, executors try to connect to the already known hosts. In case that all known executors are offline, the user will be asked for the address of a running executor.
 	\item All executors can be contacted by clients. A client needs to know the address of a executor to be able to connect.
 	\item The system uses both UDP and TCP sockets for communications between executors and it exploits broadcast UDP packets for auto-discovering. Thus the system is designed to run in local networks inside a single broadcast domain.
 	\item Communication between the client and executor uses RMI and TCP sockets.

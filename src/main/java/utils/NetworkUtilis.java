@@ -3,10 +3,14 @@ package utils;
 
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.*;
 import java.util.Enumeration;
 import Enumeration.LoggerPriority;
+import Messages.JoinMessage;
+import Network.SocketReceiver;
+import Network.SocketSenderUnicast;
 
 
 public class NetworkUtilis {
@@ -44,4 +48,18 @@ public class NetworkUtilis {
             return null;
         }
     }
+
+    /*public static Boolean checkPortOpeness(Integer portNumber) {
+        try {
+            InetAddress ia = getExternalAddress();
+            SocketSenderUnicast.send(new JoinMessage(), ia, portNumber);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }*/
 }

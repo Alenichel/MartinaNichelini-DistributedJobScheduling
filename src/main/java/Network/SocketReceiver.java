@@ -25,8 +25,8 @@ public class SocketReceiver extends Thread {
         }
     }
 
-    public ServerSocket getSsocket() {
-        return ssocket;
+    public SocketReceiver(Integer portNumber){
+        this.port = portNumber;
     }
 
     @Override
