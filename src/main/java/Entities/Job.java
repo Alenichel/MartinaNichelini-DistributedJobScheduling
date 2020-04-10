@@ -51,6 +51,8 @@ public class Job extends Thread implements Serializable, Callable {
     public Object call() {
         this.status = JobStatus.EXECUTION;
         Object returned = this.task.execute();
+        this.status = JobStatus.COMPLETED;
+        this.result = returned;
         return new Pair<String, Object>(this.id, returned);
     }
 }

@@ -13,7 +13,7 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
 
     public LazyHashMap(String pathToArchiveDir){
         super();
-        this.path = pathToArchiveDir;
+        this.path = System.getProperty("user.dir") + pathToArchiveDir;
         this.loadKeySet();
     }
 
@@ -44,25 +44,26 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
         return value;
     }
 
-    private void loadKeySet(){                      // it iterates over all filenames and it puts a couple (key, value)
-        File dir = new File(this.path);                  //  in it's own data structure
+    private void loadKeySet(){                       // it iterates over all filenames and it puts a couple (key, value)
+        File dir = new File(path);                  //  in it's own data structure
         File[] directoryListing = dir.listFiles();
         if (directoryListing != null) {
             for (File child : directoryListing) {
-                super.put( (K)child.getName(), null);
+                if (!child.getName().contains("PENDING")) {
+                    super.put((K) child.getName(), null);
+                }
             }
         }
     }
 
     private void saveToFile(K key, V value){
         try {
-            String filename = System.getProperty("user.dir");
-            filename += path;
+            String filename = path;
             if ( ((Job)value).getStatus() == JobStatus.PENDING ){               // if i'm saving a pending job
                 filename += ("PENDING_" + key);                                 // add a PENDING tag
             } else {                                                            // if i'm saving a completed job
-                filename +=  key;
-                String pendingFilename = System.getProperty("user.dir") + path + "PENDING_" + key.toString();    // before saving the new file
+                filename += key.toString();
+                String pendingFilename = path + "PENDING_" + key.toString();    // before saving the new file
                 File pendingFile = new File(pendingFilename);                   //   delete the old PENDING ONE
                 Boolean ack = pendingFile.delete();
             }
@@ -71,17 +72,16 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
             oos.writeObject(value);
             oos.close();
             fos.close();
-            Logger.log(LoggerPriority.DEBUG, "Successfully saved to file");
+            Logger.log(LoggerPriority.DEBUG, "Job with id: " + key.toString() + " successfully saved to file");
         } catch (IOException e) {
             Logger.log(LoggerPriority.ERROR, "Error during serialization");
-            Logger.log(LoggerPriority.ERROR, "Working Directory = " +
-                    System.getProperty("user.dir"));
+            Logger.log(LoggerPriority.ERROR, "Path was = " + path);
             e.printStackTrace();
         }
     }
 
     private V loadFromFile(K key) throws IOException, ClassNotFoundException {
-        String filename = path + key.toString();
+        String filename =  path + key.toString();
         File file = new File(filename);
         file.mkdirs();
         file.createNewFile();

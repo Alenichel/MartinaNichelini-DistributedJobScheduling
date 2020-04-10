@@ -78,11 +78,12 @@ public class ClientMain {
                             Logger.log(LoggerPriority.NOTIFICATION, "Received response");
 
                             Logger.log(LoggerPriority.NOTIFICATION, "Task status is: " + rsp.getJobStatus());
-                            Logger.log(LoggerPriority.NOTIFICATION, "Response lenght is: " + (rsp.getResult().toString().length() -2));
-                            if (rsp.getJobStatus() == JobStatus.COMPLETED){
+                            try {
+                                Logger.log(LoggerPriority.NOTIFICATION, "Response lenght is: " + (rsp.getResult().toString().length() - 2));
                                 Logger.log(LoggerPriority.NOTIFICATION, "Returned value is: " + rsp.getResult().toString());
+                            } catch (NullPointerException e){
+                                Logger.log(LoggerPriority.WARNING, "Return value is not available");
                             }
-
                         }catch (ClassCastException e){
                             Logger.log(LoggerPriority.NOTIFICATION, "Request job doesn't not exist (or has been lost)" );
                         }

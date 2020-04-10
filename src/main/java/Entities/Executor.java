@@ -134,8 +134,6 @@ public class Executor {
                 try {
                     Pair<String, Object> p = executorCompletionService.take().get();
                     Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + JobReturnValue.OK);
-                    idToJob.get(p.first).setStatus(JobStatus.COMPLETED);
-                    idToJob.get(p.first).setResult(p.second);
                     ((LazyHashMap)idToJob).updateOnFile(p.first);         //black magic
                     decrementJobs();
                     printState();
@@ -158,7 +156,7 @@ public class Executor {
         Integer counter = 0;
         if (directoryListing != null) {
             for (File child : directoryListing) {
-                if (child.getName().contains("PENDING")){
+                if (child.getName().contains("PENDING") && !child.getName().equals("placeholder")){
                     counter++;
                     try {
                         FileInputStream fis = new FileInputStream(child);
@@ -177,7 +175,6 @@ public class Executor {
         Logger.log(LoggerPriority.NOTIFICATION, "Found " + counter + " incompleted jobs");
         for (Job job : uncompletedJobs) {
             job.call();
-            job.setStatus(JobStatus.COMPLETED);
             this.idToJob.put(job.getID(), job);
         }
         Logger.log(LoggerPriority.NOTIFICATION, "All uncompleted jobs have been executed");
