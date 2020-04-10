@@ -13,7 +13,11 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
 
     public LazyHashMap(String pathToArchiveDir){
         super();
-        this.path = System.getProperty("user.dir") + pathToArchiveDir;
+        this.path = System.getProperty("user.home") + pathToArchiveDir;
+        File directory = new File(path);
+        if (! directory.exists()){
+            directory.mkdirs();
+        }
         this.loadKeySet();
     }
 

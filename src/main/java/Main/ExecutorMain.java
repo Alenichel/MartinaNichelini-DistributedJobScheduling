@@ -21,7 +21,7 @@ public class ExecutorMain {
     public static final Integer executorsPort = 9670;
     public static final Integer multicastPort = 6789;
     public static final Integer RMIPort = 1099;
-    public static final String relativePathToArchiveDir = "/ser/";
+    public static final String relativePathToArchiveDir = "/.DJS/ser/";
     public static Integer nThreads = Runtime.getRuntime().availableProcessors();
     public static final InetAddress localIP = NetworkUtilis.getLocalAddress();
     public static final InetAddress externalIP = NetworkUtilis.getExternalAddress();
@@ -39,13 +39,13 @@ public class ExecutorMain {
     public static void main(String[] args) throws Exception {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
-        String WD = System.getProperty("user.dir");
+        /*String WD = System.getProperty("user.dir");
         String repoRelativePath = "src/main/java";
 
         if (!WD.substring(WD.length() - repoRelativePath.length()).equals(repoRelativePath)){
-            Logger.log(LoggerPriority.ERROR, "(fatal) Working Directory must be <relative_path_to_the_repo>/src/main/java");
+            Logger.log(LoggerPriority.ERROR, "(fatal) Working Directory must be <relative_path_to_the_repo>/src/main/java\nIt's " + System.getProperty("user.dir"));
             return;
-        }
+        }*/
 
         Scanner s = new Scanner(System.in);
         System.out.println("\nChoose: \n1) for using LOCAL_MODE only\n2) for using GLOBAL_MODE.\nDefault: 1\n");
