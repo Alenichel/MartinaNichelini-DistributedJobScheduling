@@ -23,6 +23,7 @@ public class ExecutorMain {
     public static final Integer RMIPort = 1099;
     public static final String relativePathToArchiveDir = "/ser/";
     public static Integer nThreads = Runtime.getRuntime().availableProcessors();
+    public static final InetAddress localIP = NetworkUtilis.getLocalAddress();
     public static final InetAddress externalIP = NetworkUtilis.getExternalAddress();
     public static BroadcastingType bt;
 
@@ -101,7 +102,10 @@ public class ExecutorMain {
         Logger.log(LoggerPriority.NOTIFICATION, "Socket TCP client receiver started on port: " + clientsPort);
 
         ComputeEngine.getIstance().startRMI();
-        Logger.log(LoggerPriority.NOTIFICATION, "RMI listener started on port" + RMIPort);
+        Logger.log(LoggerPriority.NOTIFICATION, "RMI listener started on port: " + RMIPort);
+
+        Logger.log(LoggerPriority.NORMAL, "My local ip address is: " + localIP);
+        Logger.log(LoggerPriority.NORMAL, "My external ip address is: " + externalIP);
 
         Logger.log(LoggerPriority.NORMAL, "++++++++++++++++++++++++++++++");
 

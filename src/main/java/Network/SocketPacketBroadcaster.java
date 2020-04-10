@@ -2,6 +2,7 @@ package Network;
 
 import Entities.Executor;
 import Enumeration.LoggerPriority;
+import Main.ExecutorMain;
 import Messages.JoinMessage;
 import Messages.Message;
 import Messages.PongMessage;
@@ -115,7 +116,6 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
             }
         }
 
-        Logger.log(LoggerPriority.NOTIFICATION, "My local ip is: " + NetworkUtilis.getLocalAddress());
         this.sendTo(new JoinMessage(), kh);
     }
 
@@ -126,7 +126,7 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
     public void sendTo(Message msg, Collection<InetAddress> recepient){
         for(InetAddress ia : recepient){
             try {
-                if (ia.equals(NetworkUtilis.getLocalAddress())){            // skipping myself if present
+                if (ia.equals(ExecutorMain.localIP)){            // skipping myself if present
                     continue;
                 }
                 SocketSenderUnicast.send(msg, ia, this.port);

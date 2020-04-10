@@ -2,6 +2,7 @@ package Network;
 
 
 import Enumeration.LoggerPriority;
+import Main.ExecutorMain;
 import Messages.Message;
 import utils.CallbacksEngine;
 import utils.Logger;
@@ -30,7 +31,7 @@ public class SocketDatagramReceiver  extends Thread  {
             Logger.log(LoggerPriority.DEBUG,"DGR -> Waiting for data");
             while (true) {
                 this.socket.receive(dgp);
-                String local = NetworkUtilis.getLocalAddress().getHostAddress();
+                String local = ExecutorMain.localIP.getHostAddress();
                 String gotAddress = dgp.getAddress().getHostAddress();
                 if ( ! local.equals(gotAddress) ){
                     Logger.log(LoggerPriority.DEBUG,"DGR -> Data received");

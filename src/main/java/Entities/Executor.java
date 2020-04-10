@@ -39,7 +39,7 @@ public class Executor {
 
     private Executor() {
         this.executorToNumberOfJobs = new HashMap<InetAddress, Integer>();
-        this.executorToNumberOfJobs.put(NetworkUtilis.getLocalAddress(), 0);
+        this.executorToNumberOfJobs.put(ExecutorMain.localIP, 0);
         this.foreignCompletedJobs = new HashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
@@ -55,7 +55,7 @@ public class Executor {
             this.executorToNumberOfJobs.put(address, jobs);
         }
         if (!this.knownExecutors.contains(address)){                    // if a new executor connects, add it to the list of know host
-            if (address.equals(NetworkUtilis.getLocalAddress())){
+            if (address.equals(ExecutorMain.localIP)){
                 return;
             }
             this.knownExecutors.add(address);
@@ -104,18 +104,18 @@ public class Executor {
     public Map<InetAddress, Integer> getExecutorToNumberOfJobs() { return executorToNumberOfJobs; }
 
     public Integer getNumberOfJobs() {
-        return this.executorToNumberOfJobs.get(NetworkUtilis.getLocalAddress());
+        return this.executorToNumberOfJobs.get(ExecutorMain.localIP);
     }
 
     public Map<String, InetAddress> getForeignCompletedJobs() { return foreignCompletedJobs; }
 
     private void incrementJobs(){
-        this.executorToNumberOfJobs.put(NetworkUtilis.getLocalAddress(), this.getNumberOfJobs() + 1);
+        this.executorToNumberOfJobs.put(ExecutorMain.localIP, this.getNumberOfJobs() + 1);
         printState();
     }
 
     private void decrementJobs(){
-        this.executorToNumberOfJobs.put(NetworkUtilis.getLocalAddress(), this.getNumberOfJobs() - 1);
+        this.executorToNumberOfJobs.put(ExecutorMain.localIP, this.getNumberOfJobs() - 1);
         //printState();
     }
 

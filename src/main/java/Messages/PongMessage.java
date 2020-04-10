@@ -22,11 +22,15 @@ public class PongMessage extends Message {
     }
 
     private void adjustAddresses(){
+        Boolean containsLocal = false;
         for(InetAddress ia : knownHosts){
-            if (ia.equals(NetworkUtilis.getLocalAddress())){
-                knownHosts.remove(ia);
-                knownHosts.add(ExecutorMain.externalIP);
+            if (ia.equals(ExecutorMain.localIP)){
+                containsLocal = true;
             }
+        }
+        if (containsLocal){
+            knownHosts.remove(ExecutorMain.localIP);
+            knownHosts.add(ExecutorMain.externalIP);
         }
     }
 

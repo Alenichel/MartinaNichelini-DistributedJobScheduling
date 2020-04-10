@@ -1,6 +1,7 @@
 package Network;
 
 import Enumeration.LoggerPriority;
+import Main.ExecutorMain;
 import Messages.Message;
 import utils.CallbacksEngine;
 import utils.Logger;
@@ -37,7 +38,7 @@ public class MulticastReceiver extends Thread {
             Logger.log(LoggerPriority.NOTIFICATION,"MULTICAST_RECEIVER-> Waiting for data");
             while (true) {
                 this.socket.receive(dgp);
-                String local = NetworkUtilis.getLocalAddress().getHostAddress();
+                String local = ExecutorMain.localIP.getHostAddress();
                 String gotAddress = dgp.getAddress().getHostAddress();
                 Logger.log(LoggerPriority.DEBUG,"DGR -> Data received");
                 ByteArrayInputStream bis = new ByteArrayInputStream(dgp.getData());
