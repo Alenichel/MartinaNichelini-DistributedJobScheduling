@@ -44,6 +44,7 @@ public class SocketDatagramReceiver  extends Thread  {
             }
         } catch (Exception e) {
             Logger.log(LoggerPriority.ERROR, e.toString());
+            e.printStackTrace();
         }
     }
 }
