@@ -6,6 +6,7 @@ import Main.ExecutorMain;
 import utils.CallbacksEngine;
 import utils.Logger;
 import java.io.*;
+import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -47,7 +48,11 @@ public class SocketReceiver extends Thread {
                 CallbacksEngine.getIstance().handleCallback(rcv, socket.getInetAddress(), oos);
                 socket.close();
             }
-        } catch (IOException | ClassNotFoundException | InterruptedException e) {
+        } catch (BindException e){
+            Logger.log(LoggerPriority.ERROR, "(fatal) Address: " + this.port + " is already in use. Quitting...");
+            System.exit(1);
+        }
+        catch (IOException | ClassNotFoundException | InterruptedException e) {
             Logger.log(LoggerPriority.ERROR, e.toString());
             e.printStackTrace();
         }
