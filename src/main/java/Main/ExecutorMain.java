@@ -104,8 +104,8 @@ public class ExecutorMain {
         ComputeEngine.getIstance().startRMI();
         Logger.log(LoggerPriority.NOTIFICATION, "RMI listener started on port: " + RMIPort);
 
-        Logger.log(LoggerPriority.NORMAL, "My local ip address is: " + localIP);
-        Logger.log(LoggerPriority.NORMAL, "My external ip address is: " + externalIP);
+        Logger.log(LoggerPriority.NOTIFICATION, "My local ip address is: " + localIP);
+        Logger.log(LoggerPriority.NOTIFICATION, "My external ip address is: " + externalIP);
 
         Logger.log(LoggerPriority.NORMAL, "++++++++++++++++++++++++++++++");
 
