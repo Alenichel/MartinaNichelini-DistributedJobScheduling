@@ -2,28 +2,31 @@ package Entities;
 
 import Enumeration.JobStatus;
 import Tasks.Task;
+import utils.Pair;
+
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
-public class Job extends Thread implements Serializable {
+public class Job extends Thread implements Serializable, Callable {
     private Boolean isAssigned;
     private InetAddress executorAddress;
     private String id;
     private JobStatus status;
-    private JobExecutor je;
     private Object result;
+    private Task task;
 
     public Job(Task task){
         this.isAssigned = false;
         this.status = JobStatus.UNASSIGNED;
         this.id = UUID.randomUUID().toString();
 
-        this.je = new JobExecutor(this.id, task);
+        this.task = task;
     }
 
     public String getType() {
-        return this.je.toString();
+        return this.task.toString();
     }
 
     public String getID() {
@@ -36,15 +39,17 @@ public class Job extends Thread implements Serializable {
 
     public void setStatus(JobStatus status) { this.status = status;}
 
-    public JobExecutor getJobExecutor() {
-        return je;
-    }
-
     public Object getResult() {
         return result;
     }
 
     public void setResult(Object result) {
         this.result = result;
+    }
+
+    @Override
+    public Object call() {
+        Object returned = this.task.execute();
+        return new Pair<String, Object>(this.id, returned);
     }
 }

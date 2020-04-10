@@ -90,7 +90,7 @@ public class Executor {
     public void acceptJob(Job job) {
         Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
 
-        executorCompletionService.submit(job.getJobExecutor());
+        executorCompletionService.submit(job);
         job.setStatus(JobStatus.PENDING);
         this.idToJob.put(job.getID(), job);
         incrementJobs();
@@ -176,7 +176,7 @@ public class Executor {
         }
         Logger.log(LoggerPriority.NOTIFICATION, "Found " + counter + " incompleted jobs");
         for (Job job : uncompletedJobs) {
-            job.getJobExecutor().call();
+            job.call();
             job.setStatus(JobStatus.COMPLETED);
             this.idToJob.put(job.getID(), job);
         }
