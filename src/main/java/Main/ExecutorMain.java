@@ -20,7 +20,7 @@ public class ExecutorMain {
     public static final Integer executorsPort = 9670;
     public static final Integer multicastPort = 6789;
     public static final String relativePathToArchiveDir = "/ser/";
-    public static final Integer nThreads = 2;
+    public static Integer nThreads = Runtime.getRuntime().availableProcessors();;
 
     public static void shutdown(){
         Logger.log(LoggerPriority.NORMAL, "Shutdown");
@@ -43,13 +43,18 @@ public class ExecutorMain {
             return;
         }
 
+        if (nThreads <= 0) {
+            Logger.log(LoggerPriority.WARNING, "Error determining the number of cores. Using the default number: 2");
+            nThreads = 2;
+        }
+
         Logger.log(LoggerPriority.NOTIFICATION, "I'm up");
+        Logger.log(LoggerPriority.NOTIFICATION,"Using " + nThreads + " cores.");
 
         Executor.getIstance();
         Broadcaster.getInstance(BroadcastingType.GLOBAL_TCP);
 
         SocketDatagramReceiver sdr = new SocketDatagramReceiver(executorsPort);
-        //MulticastReceiver sdr = new MulticastReceiver();
         sdr.start();
 
         SocketReceiver srToExecutors = new SocketReceiver(SocketReceiverType.TO_EXECUTOR);
@@ -58,11 +63,7 @@ public class ExecutorMain {
         SocketReceiver srToClient = new SocketReceiver(SocketReceiverType.TO_CLIENT);
         srToClient.start();
 
-        //Message msg = new JoinMessage();
-        //SocketDatagramBroadcaster.send(executorsPort, msg);
-        //MulticastPublisher.send(msg);
-        Broadcaster.getInstance().sayHello();
-
+        Broadcaster.getInstance().sayHello();                           // tell others that i'm online
 
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
