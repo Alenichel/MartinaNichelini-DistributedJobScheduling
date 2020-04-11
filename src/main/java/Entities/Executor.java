@@ -18,6 +18,7 @@ public class Executor {
     private Map<String, Job> idToJob;                                       // is persistent
     private Map<InetAddress, Integer> executorToNumberOfJobs;
     private Map<String, InetAddress> foreignCompletedJobs;
+    private Map<String, Future<Pair<String, Job>>> idToFuture;
     private java.util.concurrent.Executor executorService;
     private CompletionService<Pair<String, Object>> executorCompletionService;
     private CallbackThread ct;
@@ -34,12 +35,13 @@ public class Executor {
     }
 
     private Executor() {
-        this.executorToNumberOfJobs = new HashMap<InetAddress, Integer>();
+        this.executorToNumberOfJobs = new HashMap<>();
         this.executorToNumberOfJobs.put(ExecutorMain.localIP, 0);
-        this.foreignCompletedJobs = new HashMap<String, InetAddress>();
+        this.foreignCompletedJobs = new HashMap<>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
-        this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.relativePathToArchiveDir);
+        this.idToJob = new LazyHashMap<>(ExecutorMain.relativePathToArchiveDir);
+        this.idToFuture = new HashMap<>();
         this.runUncompletedJobs();
         this.ct = new CallbackThread();
         this.ct.start();
@@ -88,13 +90,26 @@ public class Executor {
 
         job.setStatus(JobStatus.PENDING);
         this.idToJob.put(job.getID(), job);
-        executorCompletionService.submit(job);
+        this.idToFuture.put(job.getID(), executorCompletionService.submit(job));
         incrementJobs();
 
         UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());
 
         Broadcaster.getInstance().send(msg);
         //MulticastPublisher.send(msg);
+    }
+
+    public Job reassignJobs(){
+        if(ExecutorMain.nThreads < getNumberOfJobs() ){
+            for (Job j : this.idToJob.values()){
+                if (j.getStatus() == JobStatus.PENDING){
+                    this.idToFuture.remove(j.getID()).cancel(true);
+                    this.decrementJobs();
+                    return j;
+                }
+            }
+        }
+        return null;
     }
 
     public Map<InetAddress, Integer> getExecutorToNumberOfJobs() { return executorToNumberOfJobs; }
@@ -112,7 +127,6 @@ public class Executor {
 
     private void decrementJobs(){
         this.executorToNumberOfJobs.put(ExecutorMain.localIP, this.getNumberOfJobs() - 1);
-        //printState();
     }
 
     public synchronized Map<String, Job> getIdToJob() {
@@ -130,6 +144,7 @@ public class Executor {
                 try {
                     Pair<String, Object> p = executorCompletionService.take().get();
                     Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + JobReturnValue.OK);
+                    idToFuture.remove(p.first);
                     ((LazyHashMap)idToJob).updateOnFile(p.first);         //black magic
                     decrementJobs();
                     printState();
