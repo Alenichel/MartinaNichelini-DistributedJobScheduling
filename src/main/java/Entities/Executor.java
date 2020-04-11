@@ -22,7 +22,7 @@ public class Executor {
     private CompletionService<Pair<String, Object>> executorCompletionService;
     private CallbackThread ct;
     private ArrayList<InetAddress> knownExecutors;                          // is persistent
-
+    private BlockingQueue<Future<Pair<String, Object>>> bq;
     public static Executor instance = null;
 
     public static Executor getIstance() {
@@ -39,7 +39,7 @@ public class Executor {
         this.executorToNumberOfJobs.put(ExecutorMain.localIP, 0);
         this.foreignCompletedJobs = new HashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
-        BlockingQueue<Future<Pair<String, Object>>> bq = new LinkedBlockingQueue<>();
+        this.bq = new LinkedBlockingQueue<>();
         this.executorCompletionService = new ExecutorCompletionService<>(executorService, bq);
         this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.relativePathToArchiveDir);
         this.runUncompletedJobs();
