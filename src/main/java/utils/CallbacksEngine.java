@@ -4,6 +4,7 @@ import Entities.Executor;
 import Entities.Job;
 import Enumeration.LoggerPriority;
 import Messages.*;
+import Network.Broadcaster;
 import Network.SocketSenderUnicast;
 import Main.ExecutorMain;
 
@@ -92,6 +93,17 @@ public class CallbacksEngine {
 
                 Executor.getIstance().getForeignCompletedJobs().put( ((UpdateTableMessage)message).getJobId() ,fromAddress);
                 Executor.getIstance().printState();
+
+                if(nJobs == 0){
+                    Job rj = Executor.getIstance().reassignJobs();
+                    if (rj != null){
+                        ProposeJobMessage pjm = new ProposeJobMessage(rj);
+                        SocketSenderUnicast.send(pjm, fromAddress, ExecutorMain.executorsPort);
+                        UpdateTableMessage utm = new UpdateTableMessage(Executor.getIstance().getNumberOfJobs(), rj.getID());
+                        Broadcaster.getInstance().send(utm);
+                    }
+                }
+
                 break;
 
 
