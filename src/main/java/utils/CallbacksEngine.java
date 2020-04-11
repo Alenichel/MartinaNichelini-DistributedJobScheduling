@@ -101,6 +101,7 @@ public class CallbacksEngine {
                         SocketSenderUnicast.send(pjm, fromAddress, ExecutorMain.executorsPort);
                         UpdateTableMessage utm = new UpdateTableMessage(Executor.getIstance().getNumberOfJobs(), rj.getID());
                         Broadcaster.getInstance().send(utm);
+                        Logger.log(LoggerPriority.NOTIFICATION, "Reassingned job with id: " + rj.getID());
                     }
                 }
 

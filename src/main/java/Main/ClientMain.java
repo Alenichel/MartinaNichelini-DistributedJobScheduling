@@ -90,7 +90,7 @@ public class ClientMain {
                         break;
                     case 4:
                         Integer i = 0;
-                        while (i < 50){
+                        while (i < 15){
                             Pi taskk = new Pi(i + 80000);
                             String idd = null;
                             idd = comp.executeTask(taskk);

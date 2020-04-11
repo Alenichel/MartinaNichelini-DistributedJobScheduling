@@ -100,12 +100,11 @@ public class Executor {
     }
 
     public Job reassignJobs(){
-        if(ExecutorMain.nThreads < getNumberOfJobs() ){
-            for (Job j : this.idToJob.values()){
-                if (j.getStatus() == JobStatus.PENDING){
-                    this.idToFuture.remove(j.getID()).cancel(true);
-                    this.decrementJobs();
-                    return j;
+        if(getNumberOfJobs() > ExecutorMain.nThreads ){
+            for (String key : idToFuture.keySet()){
+                if (idToJob.get(key).getStatus() == JobStatus.PENDING){
+                    idToFuture.get(key).cancel(true);
+                    return idToJob.get(key);
                 }
             }
         }
