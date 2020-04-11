@@ -22,7 +22,6 @@ public class Executor {
     private CompletionService<Pair<String, Object>> executorCompletionService;
     private CallbackThread ct;
     private ArrayList<InetAddress> knownExecutors;                          // is persistent
-    private BlockingQueue<Future<Pair<String, Object>>> bq;
     public static Executor instance = null;
 
     public static Executor getIstance() {
@@ -39,8 +38,7 @@ public class Executor {
         this.executorToNumberOfJobs.put(ExecutorMain.localIP, 0);
         this.foreignCompletedJobs = new HashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
-        this.bq = new LinkedBlockingQueue<>();
-        this.executorCompletionService = new ExecutorCompletionService<>(executorService, bq);
+        this.executorCompletionService = new ExecutorCompletionService<>(executorService);
         this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.relativePathToArchiveDir);
         this.runUncompletedJobs();
         this.ct = new CallbackThread();
@@ -61,8 +59,8 @@ public class Executor {
         printState();
     }
 
-    public synchronized void removeExecutor(InetAddress addres){
-        executorToNumberOfJobs.remove(addres);
+    public synchronized void removeExecutor(InetAddress address){
+        executorToNumberOfJobs.remove(address);
         System.out.println("***************************");
         System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToNumberOfJobs));
         System.out.println("***************************");
