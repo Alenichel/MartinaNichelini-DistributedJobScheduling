@@ -12,10 +12,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class Executor {
     private Map<String, Job> idToJob;                                       // is persistent
@@ -42,7 +39,8 @@ public class Executor {
         this.executorToNumberOfJobs.put(ExecutorMain.localIP, 0);
         this.foreignCompletedJobs = new HashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
-        this.executorCompletionService = new ExecutorCompletionService<>(executorService);
+        BlockingQueue<Future<Pair<String, Object>>> bq = new LinkedBlockingQueue<>();
+        this.executorCompletionService = new ExecutorCompletionService<>(executorService, bq);
         this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.relativePathToArchiveDir);
         this.runUncompletedJobs();
         this.ct = new CallbackThread();
