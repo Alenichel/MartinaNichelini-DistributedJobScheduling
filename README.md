@@ -7,7 +7,7 @@
 </p>
 
 ## Contributors
-This project has been completely developed by: [https://github.com/stefanomartina]Stefano Martina and [https://github.com/Alenichel]Alessandro Nichelini.
+This project has been completely developed by: [Stefano Martina](https://github.com/stefanomartina) and [Alessandro Nichelini](https://github.com/Alenichel).
 
 ## Assignment
 Implement an infrastructure to manage jobs submitted to a cluster of Executors. Each client may submit a job to any of the executors receiving a job id as a return value. Through such job id, clients may check (contacting the same  executor  they  submitted  the  job  to)  if  the  job  has  been  executed  and  may  retrieve  back  the  results produced by the job.
