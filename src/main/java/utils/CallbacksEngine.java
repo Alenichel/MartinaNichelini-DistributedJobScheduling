@@ -46,7 +46,8 @@ public class CallbacksEngine {
         switch (message.getType()){
             case PONG_MESSAGE:
                 Integer n = ((PongMessage)msg).getNumberOfJobs();
-                Executor.getIstance().addExecutor(fromAddress, n);
+                Integer nThread = ((PongMessage)msg).getNThread();
+                Executor.getIstance().addExecutor(fromAddress, n, nThread);
                 break;
 
             case PROPOSE_JOB:
@@ -62,12 +63,12 @@ public class CallbacksEngine {
                     } else {
                         toAdjust = true;
                     }
-                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs(), Executor.getIstance().getExecutorToNumberOfJobs().keySet().stream().collect(Collectors.toList()), toAdjust);
+                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs(), Executor.getIstance().getExecutorToNumberOfJobs().keySet().stream().collect(Collectors.toList()), toAdjust, ExecutorMain.nThreads);
                     if (  ((JoinMessage)msg).getJustExploring()  ) {
                         oos.writeObject(pongMessage);
                         Logger.log(LoggerPriority.NOTIFICATION, "Directly responded to exploring message.");
                     } else {
-                        Executor.getIstance().addExecutor(fromAddress, 0);
+                        Executor.getIstance().addExecutor(fromAddress, 0, ((JoinMessage)message).getNThreads());
                         SocketSenderUnicast.send(pongMessage, fromAddress, ExecutorMain.executorsPort);
                     }
                 } catch (IOException | ClassNotFoundException e){

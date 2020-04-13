@@ -32,7 +32,7 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
 
     private PongMessage manuallyAskForHost(){
         Scanner scanner = new Scanner(System.in);
-        JoinMessage jm = new JoinMessage();
+        JoinMessage jm = new JoinMessage(ExecutorMain.nThreads);
         jm.setJustExploring(true);
         PongMessage pm;
         while (true) {
@@ -66,7 +66,7 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
     public void sayHello(){
         ArrayList<InetAddress> kh = Executor.getIstance().getKnownExecutors();
         PongMessage pm = null;
-        JoinMessage jm = new JoinMessage();
+        JoinMessage jm = new JoinMessage(ExecutorMain.nThreads);
         jm.setJustExploring(true);
 
         if (kh.isEmpty()) {                                                            // if there is not any known host
@@ -116,7 +116,7 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
             }
         }
 
-        this.sendTo(new JoinMessage(), kh);
+        this.sendTo(new JoinMessage(ExecutorMain.nThreads), kh);
     }
 
     public void send(Message msg){

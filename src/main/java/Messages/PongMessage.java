@@ -11,11 +11,13 @@ public class PongMessage extends Message {
 
     private Integer numberOfJobs;
     private Collection<InetAddress> knownHosts;
+    private Integer nThread;
 
-    public PongMessage(Integer numberOfJobs, Collection<InetAddress> knowHosts, Boolean toAdjust) {
+    public PongMessage(Integer numberOfJobs, Collection<InetAddress> knowHosts, Boolean toAdjust, Integer nThread) {
         this.type = MessageType.PONG_MESSAGE;
         this.numberOfJobs = numberOfJobs;
         this.knownHosts = knowHosts;
+        this.nThread = nThread;
         if (toAdjust){
             adjustAddresses();
         }
@@ -41,4 +43,7 @@ public class PongMessage extends Message {
     public Collection<InetAddress> getKnownHosts() {
         return knownHosts;
     }
+
+    public Integer getNThread(){return nThread;}
+
 }

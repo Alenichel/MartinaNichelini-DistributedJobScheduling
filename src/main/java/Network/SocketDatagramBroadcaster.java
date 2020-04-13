@@ -1,5 +1,6 @@
 package Network;
 
+import Main.ExecutorMain;
 import Messages.JoinMessage;
 import Messages.Message;
 import java.io.ByteArrayOutputStream;
@@ -16,7 +17,7 @@ public class SocketDatagramBroadcaster implements BroadcastingUnit {
     }
 
     public void sayHello(){
-        Message msg = new JoinMessage();
+        Message msg = new JoinMessage(ExecutorMain.nThreads);
         this.send(msg);
     }
 

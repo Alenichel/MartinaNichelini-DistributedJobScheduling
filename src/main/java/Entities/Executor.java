@@ -25,6 +25,7 @@ public class Executor {
     // keeps jobs that are being handled
     private Map<String, Job> idToActiveJobs;
     private Map<InetAddress, Integer> executorToNumberOfJobs;
+    private Map<InetAddress, Integer> executorToNumberOfThreads;
     private Map<String, InetAddress> foreignCompletedJobs;
     private java.util.concurrent.Executor executorService;
     private CompletionService<Pair<String, Object>> executorCompletionService;
@@ -45,6 +46,7 @@ public class Executor {
     private Executor() {
         this.executorToNumberOfJobs = new HashMap<InetAddress, Integer>();
         this.executorToNumberOfJobs.put(ExecutorMain.localIP, 0);
+        this.executorToNumberOfThreads = new HashMap<>();
         this.foreignCompletedJobs = new HashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
@@ -56,10 +58,11 @@ public class Executor {
         this.knownExecutors = new ArrayList<>();
     }
 
-    public synchronized void addExecutor(InetAddress address, Integer jobs){
+    public synchronized void addExecutor(InetAddress address, Integer jobs, Integer nThreads){
         if (!this.executorToNumberOfJobs.containsKey(address)) {
             this.executorToNumberOfJobs.put(address, jobs);
         }
+        this.executorToNumberOfThreads.put(address, nThreads);
         if (!this.knownExecutors.contains(address)){                    // if a new executor connects, add it to the list of know host
             if (address.equals(ExecutorMain.localIP)){
                 return;
@@ -170,7 +173,7 @@ public class Executor {
                     idToActiveJobs.remove(p.first);
                     if (idToJob.get(p.first).getStatus() == JobStatus.ABORTED) {
                         idToJob.remove(p.first);
-                        Logger.log(LoggerPriority.DEBUG, "Process with id: " + p.first + " has been discarded");
+                        Logger.log(LoggerPriority.NOTIFICATION, "Process with id: " + p.first + " has been aborted");
                         continue;
                     }
                     Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + JobReturnValue.OK);
