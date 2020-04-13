@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,8 +51,8 @@ public class CallbacksEngine {
                 break;
 
             case PROPOSE_JOB:
-                Job j = ((ProposeJobMessage)msg).getJob();
-                Executor.getIstance().acceptJob(j);
+                ArrayList<Job> jobs = ((ProposeJobMessage)msg).getJobs();
+                Executor.getIstance().acceptJobs(jobs);
                 break;
 
             case JOIN_MESSAGE:
@@ -95,7 +96,7 @@ public class CallbacksEngine {
                     Executor.getIstance().printState();
                 }
                 if (nJobs == 0){
-                    Executor.getIstance().reassignJob(fromAddress);
+                    Executor.getIstance().reassignJobs(fromAddress);
                 }
                 break;
 
@@ -103,11 +104,11 @@ public class CallbacksEngine {
             case RESULT_REQUEST_MESSAGE:
                 ResultRequestMessage rrm = (ResultRequestMessage)message;
                 String id = rrm.getJobId();
-                Map<String, Job> jobs = Executor.getIstance().getIdToJob();
+                Map<String, Job> jobss = Executor.getIstance().getIdToJob();
                 // Directly respond if you have the result
-                if (jobs.containsKey(id)) {
+                if (jobss.containsKey(id)) {
                     Logger.log(LoggerPriority.DEBUG, "RESULT_REQUEST_MESSAGE_HANDLER: Contacted executor is the owner of the job, now answering");
-                    Job js = jobs.get(id);
+                    Job js = jobss.get(id);
                     IKnowMessage rrm_toSend = new IKnowMessage(js.getStatus(), js.getResult());
                     oos.writeObject(rrm_toSend);
                     oos.close();

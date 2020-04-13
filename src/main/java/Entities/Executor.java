@@ -91,22 +91,23 @@ public class Executor {
         return getMinKey(this.executorToInfos);
     }
 
-    public void acceptJob(Job job) {
-        Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
+    public void acceptJobs(ArrayList<Job> jobs) {
+        for (Job job : jobs) {
+            Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
 
-        job.setStatus(JobStatus.PENDING);
-        this.idToJob.put(job.getID(), job);
-        this.idToActiveJobs.put(job.getID(), job);
-        executorCompletionService.submit(job);
-        incrementJobs();
+            job.setStatus(JobStatus.PENDING);
+            this.idToJob.put(job.getID(), job);
+            this.idToActiveJobs.put(job.getID(), job);
+            executorCompletionService.submit(job);
+            incrementJobs();
 
-        UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());
+            UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());
 
-        Broadcaster.getInstance().send(msg);
-        //MulticastPublisher.send(msg);
+            Broadcaster.getInstance().send(msg);
+        }
     }
 
-    public void reassignJob(InetAddress idleExecutor){
+    public void reassignJobs(InetAddress idleExecutor){
         if (this.getNumberOfJobs() > ExecutorMain.nThreads + 1){
             Job job = null;
             for (Job j : this.idToActiveJobs.values()){
@@ -116,7 +117,9 @@ public class Executor {
                 }
             }
             try {
-                ProposeJobMessage pjb = new ProposeJobMessage(job);
+                ArrayList<Job> jobs = new ArrayList<>();
+                jobs.add(job);
+                ProposeJobMessage pjb = new ProposeJobMessage(jobs);
                 SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
                 job.setStatus(JobStatus.ABORTED);
                 decrementJobs();

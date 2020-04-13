@@ -3,16 +3,18 @@ package Messages;
 import Entities.Job;
 import Enumeration.MessageType;
 
+import java.util.ArrayList;
+
 public class ProposeJobMessage extends Message {
 
-    private Job job;
+    private ArrayList<Job> jobs;
 
-    public ProposeJobMessage(Job job) {
+    public ProposeJobMessage(ArrayList<Job> jobs) {
         this.type = MessageType.PROPOSE_JOB;
-        this.job = job;
+        this.jobs = jobs;
     }
 
-    public Job getJob() {
-        return job;
+    public ArrayList<Job> getJobs() {
+        return jobs;
     }
 }
