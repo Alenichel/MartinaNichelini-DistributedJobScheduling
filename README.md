@@ -34,7 +34,7 @@ java -jar /path/to/jar/Client.jar
 for running the client.
 
 Please mind that:
-* Executors uses TCP/UDP 9669 and 9670 ports.
+* Executors use TCP/UDP 9669 and 9670 ports.
 * RMI server uses standard port: 1099
 
 If you want to build an executors group over Internet, check if the previous ports are open.
