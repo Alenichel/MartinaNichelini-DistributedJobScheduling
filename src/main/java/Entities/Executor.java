@@ -122,7 +122,7 @@ public class Executor {
                 SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
                 job.setStatus(JobStatus.ABORTED);
                 decrementJobs();
-                idToJob.remove(job.getID());
+                Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID());
             } catch (IOException | ClassNotFoundException e) {
                 Logger.log(LoggerPriority.ERROR, "(not fatal) Impossible to handle job reassignment. Continuing");
             } catch (NullPointerException e){
