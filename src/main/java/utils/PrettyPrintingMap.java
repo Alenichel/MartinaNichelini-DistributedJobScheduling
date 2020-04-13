@@ -13,7 +13,7 @@ public class PrettyPrintingMap<K, V> {
 
     public PrettyPrintingMap(Map<K, V> map) {
         this.map = map;
-        System.out.println("SYSTEM STATE - " + Executor.getIstance().getNumberOfJobs());
+        System.out.println("SYSTEM STATE");
     }
 
     public String toString() {

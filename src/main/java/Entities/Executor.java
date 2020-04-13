@@ -71,9 +71,7 @@ public class Executor {
 
     public synchronized void removeExecutor(InetAddress addres){
         executorToInfos.remove(addres);
-        System.out.println("***************************");
-        System.out.println(new PrettyPrintingMap<InetAddress, Pair<Integer, Integer>>(this.executorToInfos));
-        System.out.println("***************************");
+        printState();
     }
 
     private InetAddress getMinKey(Map<InetAddress, Pair<Integer, Integer>> map) {
