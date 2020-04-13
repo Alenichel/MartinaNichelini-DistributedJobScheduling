@@ -10,6 +10,7 @@ import Main.ExecutorMain;
 import Network.SocketSenderUnicast;
 import utils.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,6 +93,7 @@ public class Executor {
     }
 
     public void acceptJobs(ArrayList<Job> jobs) {
+        ArrayList<String> acceptedJobsIds = new ArrayList<>();
         for (Job job : jobs) {
             Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
 
@@ -101,10 +103,10 @@ public class Executor {
             executorCompletionService.submit(job);
             incrementJobs();
 
-            UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());
-
-            Broadcaster.getInstance().send(msg);
+            acceptedJobsIds.add(job.getID());
         }
+        UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), acceptedJobsIds);
+        Broadcaster.getInstance().send(msg);
     }
 
     public void reassignJobs(InetAddress idleExecutor){
@@ -133,7 +135,7 @@ public class Executor {
                 return;
             }
 
-            UpdateTableMessage utm = new UpdateTableMessage(this.getNumberOfJobs(), null);
+            UpdateTableMessage utm = new UpdateTableMessage(this.getNumberOfJobs());
             Broadcaster.getInstance().send(utm);
         }
     }

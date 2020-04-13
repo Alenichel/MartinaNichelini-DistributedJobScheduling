@@ -91,9 +91,11 @@ public class CallbacksEngine {
                 Integer nJobs = ((UpdateTableMessage)message).getnJobs();
                 Executor.getIstance().updateTable(fromAddress, nJobs);
 
-                String jobId = ((UpdateTableMessage)message).getJobId();
-                if (jobId != null){
-                    Executor.getIstance().getForeignCompletedJobs().put( jobId, fromAddress);
+                ArrayList<String> jobsId = ((UpdateTableMessage)message).getJobId();
+                if (jobsId != null){
+                    for (String s : jobsId){
+                        Executor.getIstance().getForeignCompletedJobs().put(s, fromAddress);
+                    }
                 }
                 if (fromAddress != ExecutorMain.localIP) {
                     Executor.getIstance().printState();
