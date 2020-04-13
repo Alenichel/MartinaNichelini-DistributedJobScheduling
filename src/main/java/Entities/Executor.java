@@ -24,8 +24,7 @@ public class Executor {
     private Map<String, Job> idToJob;
     // keeps jobs that are being handled
     private Map<String, Job> idToActiveJobs;
-    private Map<InetAddress, Integer> executorToNumberOfJobs;
-    private Map<InetAddress, Integer> executorToNumberOfThreads;
+    private Map<InetAddress, Pair<Integer, Integer>> executorToInfos;
     private Map<String, InetAddress> foreignCompletedJobs;
     private java.util.concurrent.Executor executorService;
     private CompletionService<Pair<String, Object>> executorCompletionService;
@@ -44,9 +43,8 @@ public class Executor {
     }
 
     private Executor() {
-        this.executorToNumberOfJobs = new HashMap<InetAddress, Integer>();
-        this.executorToNumberOfJobs.put(ExecutorMain.localIP, 0);
-        this.executorToNumberOfThreads = new HashMap<>();
+        this.executorToInfos = new HashMap<InetAddress, Pair<Integer, Integer>>();
+        this.executorToInfos.put(ExecutorMain.localIP, new Pair<>(0, ExecutorMain.nThreads));
         this.foreignCompletedJobs = new HashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
@@ -59,10 +57,9 @@ public class Executor {
     }
 
     public synchronized void addExecutor(InetAddress address, Integer jobs, Integer nThreads){
-        if (!this.executorToNumberOfJobs.containsKey(address)) {
-            this.executorToNumberOfJobs.put(address, jobs);
+        if (!this.executorToInfos.containsKey(address)) {
+            this.executorToInfos.put(address, new Pair<>(jobs, nThreads));
         }
-        this.executorToNumberOfThreads.put(address, nThreads);
         if (!this.knownExecutors.contains(address)){                    // if a new executor connects, add it to the list of know host
             if (address.equals(ExecutorMain.localIP)){
                 return;
@@ -73,17 +70,17 @@ public class Executor {
     }
 
     public synchronized void removeExecutor(InetAddress addres){
-        executorToNumberOfJobs.remove(addres);
+        executorToInfos.remove(addres);
         System.out.println("***************************");
-        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToNumberOfJobs));
+        System.out.println(new PrettyPrintingMap<InetAddress, Pair<Integer, Integer>>(this.executorToInfos));
         System.out.println("***************************");
     }
 
-    private InetAddress getMinKey(Map<InetAddress, Integer> map) {
+    private InetAddress getMinKey(Map<InetAddress, Pair<Integer, Integer>> map) {
         InetAddress minKey = null;
         int minValue = Integer.MAX_VALUE;
         for(InetAddress key : map.keySet()) {
-            int value = map.get(key);
+            int value = map.get(key).first;
             if(value < minValue) {
                 minValue = value;
                 minKey = key;
@@ -93,7 +90,7 @@ public class Executor {
     }
 
     public InetAddress proposeJob(){
-        return getMinKey(this.executorToNumberOfJobs);
+        return getMinKey(this.executorToInfos);
     }
 
     public void acceptJob(Job job) {
@@ -138,22 +135,22 @@ public class Executor {
         }
     }
 
-    public Map<InetAddress, Integer> getExecutorToNumberOfJobs() { return executorToNumberOfJobs; }
+    public Map<InetAddress, Pair<Integer,Integer>> getExecutorToInfos() { return executorToInfos; }
 
     public Integer getNumberOfJobs() {
-        return this.executorToNumberOfJobs.get(ExecutorMain.localIP);
+        return this.executorToInfos.get(ExecutorMain.localIP).first;
     }
 
     public Map<String, InetAddress> getForeignCompletedJobs() { return foreignCompletedJobs; }
 
     private void incrementJobs(){
-        this.executorToNumberOfJobs.put(ExecutorMain.localIP, this.getNumberOfJobs() + 1);
+        this.executorToInfos.get(ExecutorMain.localIP).first = this.getNumberOfJobs() + 1;
         printState();
     }
 
     private void decrementJobs(){
-        this.executorToNumberOfJobs.put(ExecutorMain.localIP, this.getNumberOfJobs() - 1);
-        //printState();
+        this.executorToInfos.get(ExecutorMain.localIP).first = this.getNumberOfJobs() - 1;
+        printState();
     }
 
     public synchronized Map<String, Job> getIdToJob() {
@@ -161,7 +158,7 @@ public class Executor {
     }
 
     public synchronized void updateTable(InetAddress executor, Integer n){
-        this.executorToNumberOfJobs.put(executor, n);
+        this.executorToInfos.get(executor).first = n;
     }
 
     private class CallbackThread extends Thread {
@@ -247,7 +244,7 @@ public class Executor {
 
     public void printState(){
         System.out.println("***************************");
-        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToNumberOfJobs));
+        System.out.println(new PrettyPrintingMap<InetAddress, Pair<Integer, Integer>>(this.executorToInfos));
         System.out.println("***************************");
     }
 }
