@@ -7,7 +7,6 @@ import Messages.JoinMessage;
 import Messages.Message;
 import Messages.PongMessage;
 import utils.Logger;
-import utils.NetworkUtilis;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -120,7 +119,7 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
     }
 
     public void send(Message msg){
-        sendTo(msg, Executor.getIstance().getExecutorToNumberOfJobs().keySet());
+        sendTo(msg, Executor.getIstance().getExecutorToInfos().keySet());
     }
 
     public void sendTo(Message msg, Collection<InetAddress> recepient){

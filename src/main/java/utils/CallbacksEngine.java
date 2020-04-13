@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,7 +62,7 @@ public class CallbacksEngine {
                     } else {
                         toAdjust = true;
                     }
-                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs(), Executor.getIstance().getExecutorToNumberOfJobs().keySet().stream().collect(Collectors.toList()), toAdjust, ExecutorMain.nThreads);
+                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs(), Executor.getIstance().getExecutorToInfos().keySet().stream().collect(Collectors.toList()), toAdjust, ExecutorMain.nThreads);
                     if (  ((JoinMessage)msg).getJustExploring()  ) {
                         oos.writeObject(pongMessage);
                         Logger.log(LoggerPriority.NOTIFICATION, "Directly responded to exploring message.");
@@ -134,7 +133,7 @@ public class CallbacksEngine {
                         // if you still have to handle the request (the client asked to you)
                         ResultRequestMessage rrm_toSend = new ResultRequestMessage(id, true);
 
-                        Set<InetAddress> addresses = Executor.getIstance().getExecutorToNumberOfJobs().keySet();
+                        Set<InetAddress> addresses = Executor.getIstance().getExecutorToInfos().keySet();
                         addresses.remove(NetworkUtilis.getLocalAddress());
                         for (InetAddress r_ia : addresses){
                             Message m =  SocketSenderUnicast.sendAndWaitResponse(rrm_toSend, r_ia, ExecutorMain.executorsPort);

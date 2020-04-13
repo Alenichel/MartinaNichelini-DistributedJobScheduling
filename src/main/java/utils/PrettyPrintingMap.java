@@ -24,10 +24,12 @@ public class PrettyPrintingMap<K, V> {
             String key = entry.getKey().toString().substring(1);
             key = (key.equals(NetworkUtilis.getLocalAddress())) ? "localhost" : key;
             key += (ExecutorMain.bt == BroadcastingType.GLOBAL_TCP) ? ExecutorMain.externalIP : "";
-            String value = entry.getValue().toString();
+            Pair<Integer, Integer> value = (Pair<Integer, Integer>) entry.getValue();
             sb.append(key);
             sb.append("\t\t====> ");
-            sb.append(value);
+            sb.append(value.first.toString());
+            sb.append("/");
+            sb.append(value.second.toString());
             if (iter.hasNext()) {
                 sb.append('\n');
             }
