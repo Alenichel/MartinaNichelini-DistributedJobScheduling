@@ -92,6 +92,9 @@ public class CallbacksEngine {
 
                 Executor.getIstance().getForeignCompletedJobs().put( ((UpdateTableMessage)message).getJobId() ,fromAddress);
                 Executor.getIstance().printState();
+                if (nJobs == 0){
+                    Executor.getIstance().reassignJob(fromAddress);
+                }
                 break;
 
 

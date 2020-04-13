@@ -4,5 +4,6 @@ public enum  JobStatus {
     UNASSIGNED,
     PENDING,
     COMPLETED,
-    EXECUTION
+    EXECUTION,
+    ABORTED
 }

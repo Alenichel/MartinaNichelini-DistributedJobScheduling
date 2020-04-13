@@ -3,9 +3,11 @@ package Entities;
 import Enumeration.JobReturnValue;
 import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
+import Messages.ProposeJobMessage;
 import Messages.UpdateTableMessage;
 import Network.Broadcaster;
 import Main.ExecutorMain;
+import Network.SocketSenderUnicast;
 import utils.*;
 import java.io.*;
 import java.net.InetAddress;
@@ -18,7 +20,10 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 
 public class Executor {
-    private Map<String, Job> idToJob;                                       // is persistent
+    // keeps all executed job. It's persistent and it's lazily load at startup time
+    private Map<String, Job> idToJob;
+    // keeps jobs that are being handled
+    private Map<String, Job> idToActiveJobs;
     private Map<InetAddress, Integer> executorToNumberOfJobs;
     private Map<String, InetAddress> foreignCompletedJobs;
     private java.util.concurrent.Executor executorService;
@@ -44,6 +49,7 @@ public class Executor {
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
         this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.relativePathToArchiveDir);
+        this.idToActiveJobs = new HashMap<>();
         this.runUncompletedJobs();
         this.ct = new CallbackThread();
         this.ct.start();
@@ -92,6 +98,7 @@ public class Executor {
 
         job.setStatus(JobStatus.PENDING);
         this.idToJob.put(job.getID(), job);
+        this.idToActiveJobs.put(job.getID(), job);
         executorCompletionService.submit(job);
         incrementJobs();
 
@@ -99,6 +106,33 @@ public class Executor {
 
         Broadcaster.getInstance().send(msg);
         //MulticastPublisher.send(msg);
+    }
+
+    public void reassignJob(InetAddress idleExecutor){
+        if (this.getNumberOfJobs() > ExecutorMain.nThreads + 1){
+            Job job = null;
+            for (Job j : this.idToActiveJobs.values()){
+                if(j.getStatus() == JobStatus.PENDING){
+                    job = j;
+                    break;
+                }
+            }
+            try {
+                ProposeJobMessage pjb = new ProposeJobMessage(job);
+                SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
+                job.setStatus(JobStatus.ABORTED);
+                decrementJobs();
+                idToJob.remove(job.getID());
+            } catch (IOException | ClassNotFoundException e) {
+                Logger.log(LoggerPriority.ERROR, "(not fatal) Impossible to handle job reassignment. Continuing");
+            } catch (NullPointerException e){
+                Logger.log(LoggerPriority.DEBUG, "no available jobs for reassignment");
+                return;
+            }
+
+            UpdateTableMessage utm = new UpdateTableMessage(this.getNumberOfJobs(), job.getID());
+            Broadcaster.getInstance().send(utm);
+        }
     }
 
     public Map<InetAddress, Integer> getExecutorToNumberOfJobs() { return executorToNumberOfJobs; }
@@ -133,6 +167,12 @@ public class Executor {
             while (true){
                 try {
                     Pair<String, Object> p = executorCompletionService.take().get();
+                    idToActiveJobs.remove(p.first);
+                    if (idToJob.get(p.first).getStatus() == JobStatus.ABORTED) {
+                        idToJob.remove(p.first);
+                        Logger.log(LoggerPriority.DEBUG, "Process with id: " + p.first + " has been discarded");
+                        continue;
+                    }
                     Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + JobReturnValue.OK);
                     ((LazyHashMap)idToJob).updateOnFile(p.first);         //black magic
                     decrementJobs();
