@@ -108,22 +108,24 @@ public class Executor {
     }
 
     public void reassignJobs(InetAddress idleExecutor){
+        ArrayList<Job> jobToReassign = new ArrayList<>();
+        Integer maxN = executorToInfos.get(idleExecutor).second;    // to balance
         if (this.getNumberOfJobs() > ExecutorMain.nThreads + 1){
-            Job job = null;
             for (Job j : this.idToActiveJobs.values()){
                 if(j.getStatus() == JobStatus.PENDING){
-                    job = j;
-                    break;
+                    jobToReassign.add(j);
+                    if (jobToReassign.size() == maxN)
+                        break;
                 }
             }
             try {
-                ArrayList<Job> jobs = new ArrayList<>();
-                jobs.add(job);
-                ProposeJobMessage pjb = new ProposeJobMessage(jobs);
+                ProposeJobMessage pjb = new ProposeJobMessage(jobToReassign);
                 SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
-                job.setStatus(JobStatus.ABORTED);
-                decrementJobs();
-                Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID());
+                for (Job job : jobToReassign) {
+                    job.setStatus(JobStatus.ABORTED);
+                    decrementJobs();
+                    Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID());
+                }
             } catch (IOException | ClassNotFoundException e) {
                 Logger.log(LoggerPriority.ERROR, "(not fatal) Impossible to handle job reassignment. Continuing");
             } catch (NullPointerException e){
@@ -131,7 +133,7 @@ public class Executor {
                 return;
             }
 
-            UpdateTableMessage utm = new UpdateTableMessage(this.getNumberOfJobs(), job.getID());
+            UpdateTableMessage utm = new UpdateTableMessage(this.getNumberOfJobs(), null);
             Broadcaster.getInstance().send(utm);
         }
     }
