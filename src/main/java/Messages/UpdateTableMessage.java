@@ -18,6 +18,7 @@ public class UpdateTableMessage extends Message{
     public UpdateTableMessage(Integer nJobs, String jobId){
         this.type = MessageType.UPDATE_TABLE_MESSAGE;
         this.nJobs = nJobs;
+        this.jobsId = new ArrayList<>();
         this.jobsId.add(jobId);
     }
 
