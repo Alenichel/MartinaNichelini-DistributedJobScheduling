@@ -67,11 +67,13 @@ public class Executor {
             }
             this.knownExecutors.add(address);
         }
+        Logger.log(LoggerPriority.NOTIFICATION, "Connected executor @"  + address);
         printState();
     }
 
-    public synchronized void removeExecutor(InetAddress addres){
-        executorToInfos.remove(addres);
+    public synchronized void removeExecutor(InetAddress address){
+        executorToInfos.remove(address);
+        Logger.log(LoggerPriority.NOTIFICATION, "Executor @"  + address + " leaved");
         printState();
     }
 
@@ -101,10 +103,11 @@ public class Executor {
             this.idToJob.put(job.getID(), job);
             this.idToActiveJobs.put(job.getID(), job);
             executorCompletionService.submit(job);
-            incrementJobs();
+            incrementJobs(false);
 
             acceptedJobsIds.add(job.getID());
         }
+        printState();
         UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), acceptedJobsIds);
         Broadcaster.getInstance().send(msg);
     }
@@ -112,7 +115,7 @@ public class Executor {
     public void reassignJobs(InetAddress idleExecutor){
         ArrayList<Job> jobToReassign = new ArrayList<>();
         Integer maxN = executorToInfos.get(idleExecutor).second;    // to balance
-        if (this.getNumberOfJobs() > ExecutorMain.nThreads + 1){
+        if (this.getNumberOfJobs() > ExecutorMain.nThreads ){
             for (Job j : this.idToActiveJobs.values()){
                 if(j.getStatus() == JobStatus.PENDING){
                     jobToReassign.add(j);
@@ -121,13 +124,15 @@ public class Executor {
                 }
             }
             try {
+                Logger.log(LoggerPriority.NOTIFICATION, "Found " + jobToReassign.size() + " jobs to reassign");
                 ProposeJobMessage pjb = new ProposeJobMessage(jobToReassign);
                 SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
                 for (Job job : jobToReassign) {
                     job.setStatus(JobStatus.ABORTED);
-                    decrementJobs();
-                    Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID());
+                    decrementJobs(false);
+                    Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID() + "to " + idleExecutor);
                 }
+                //printState();
             } catch (IOException | ClassNotFoundException e) {
                 Logger.log(LoggerPriority.ERROR, "(not fatal) Impossible to handle job reassignment. Continuing");
             } catch (NullPointerException e){
@@ -149,13 +154,21 @@ public class Executor {
     public Map<String, InetAddress> getForeignCompletedJobs() { return foreignCompletedJobs; }
 
     private void incrementJobs(){
+        incrementJobs(true);
+    }
+
+    private void incrementJobs(Boolean verbose){
         this.executorToInfos.get(ExecutorMain.localIP).first = this.getNumberOfJobs() + 1;
-        printState();
+        if (verbose) printState();
     }
 
     private void decrementJobs(){
+        decrementJobs(true);
+    }
+
+    private void decrementJobs(Boolean verbose){
         this.executorToInfos.get(ExecutorMain.localIP).first = this.getNumberOfJobs() - 1;
-        printState();
+        if (verbose) printState();
     }
 
     public synchronized Map<String, Job> getIdToJob() {
@@ -180,7 +193,7 @@ public class Executor {
                     }
                     Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + JobReturnValue.OK);
                     ((LazyHashMap)idToJob).updateOnFile(p.first);         //black magic
-                    decrementJobs();
+                    decrementJobs(false);
                     printState();
                     UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), idToJob.get(p.first).getID());
                     Broadcaster.getInstance().send(msg);
@@ -195,7 +208,7 @@ public class Executor {
     private void runUncompletedJobs(){
         ArrayList <Job> uncompletedJobs = new ArrayList<>();
         Logger.log(LoggerPriority.NOTIFICATION, "Recovering uncompleted jobs");
-        File dir = new File(System.getProperty("user.dir") + ExecutorMain.relativePathToArchiveDir);
+        File dir = new File(System.getProperty("user.home") + ExecutorMain.relativePathToArchiveDir);
         File[] directoryListing = dir.listFiles();
         Job loadedJob;
         Integer counter = 0;
@@ -230,7 +243,7 @@ public class Executor {
     }
 
     public void saveKnownExecutors(){
-        File file = new File(System.getProperty("user.dir") + "/knownExecutors.txt");
+        File file = new File(System.getProperty("user.home") + "/knownExecutors.txt");
         try {
             FileOutputStream fos = new FileOutputStream(file);
             OutputStreamWriter osw = new OutputStreamWriter(fos);
