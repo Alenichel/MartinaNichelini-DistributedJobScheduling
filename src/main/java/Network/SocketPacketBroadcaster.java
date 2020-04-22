@@ -140,7 +140,11 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
     private void loadKnownExecutors(){
         Logger.log(LoggerPriority.NOTIFICATION, "Loading known host from file");
         File file = new File(System.getProperty("user.dir") + "/knownExecutors.txt");
+
         try {
+            if (!file.exists()){
+                file.createNewFile();
+            }
             FileInputStream fis = new FileInputStream(file);
             InputStreamReader isr = new InputStreamReader(fis);
             BufferedReader br = new BufferedReader(isr);
@@ -151,7 +155,10 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
                 line = br.readLine();
             }
 
-        } catch (UnknownHostException e) {
+        }catch (FileNotFoundException e){
+
+        }
+        catch (UnknownHostException e) {
 
         } catch (IOException e) {
             Logger.log(LoggerPriority.ERROR, "(not fatal) error while opening know host file");
