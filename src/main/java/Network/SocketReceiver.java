@@ -37,7 +37,7 @@ public class SocketReceiver extends Thread {
             while (true) {
                 Socket socket = ssocket.accept();
                 socket.setKeepAlive(true);
-                socket.setSoTimeout(200);
+                //socket.setSoTimeout(2000);
                 socket.setTcpNoDelay(true);
                 OutputStream os = socket.getOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(os);
@@ -48,6 +48,7 @@ public class SocketReceiver extends Thread {
                 Object rcv = ois.readObject(); // TODO handle error
                 Logger.log(LoggerPriority.DEBUG, "SR -> Received new message");
                 CallbacksEngine.getIstance().handleCallback(rcv, socket.getInetAddress(), oos);
+                //sleep(1000);
                 //socket.close();
             }
         } catch (BindException e){

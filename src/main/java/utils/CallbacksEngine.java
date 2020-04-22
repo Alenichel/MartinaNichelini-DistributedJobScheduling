@@ -37,7 +37,7 @@ public class CallbacksEngine {
     private void sendDKM(ObjectOutputStream oos) throws IOException {
         IDontKnowMessage idkm = new IDontKnowMessage();
         oos.writeObject(idkm);
-        oos.close();
+        //oos.close();
     }
 
     public void handleCallback(Object msg, InetAddress fromAddress, ObjectOutputStream oos) throws InterruptedException, IOException, ClassNotFoundException {
@@ -116,7 +116,7 @@ public class CallbacksEngine {
                     Job js = jobss.get(id);
                     IKnowMessage rrm_toSend = new IKnowMessage(js.getStatus(), js.getResult());
                     oos.writeObject(rrm_toSend);
-                    oos.close();
+                    //oos.close();
                 }
                 // Directly contact the owner of the job if know it
                 else if (Executor.getIstance().getForeignCompletedJobs().containsKey(id)){
@@ -126,7 +126,7 @@ public class CallbacksEngine {
                         InetAddress ia = Executor.getIstance().getForeignCompletedJobs().get(id);
                         Message m = SocketSenderUnicast.sendAndWaitResponse(rrm_toSend, ia, ExecutorMain.executorsPort);
                         oos.writeObject(m);
-                        oos.close();
+                        //oos.close();
                     } catch (ConnectException e) {
                         Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: Contacted owner did not respond. This exception has been handled");
                         sendDKM(oos);
@@ -154,7 +154,7 @@ public class CallbacksEngine {
                                         ResultRequestMessage f_rrm = new ResultRequestMessage(id, true);
                                         Message fm = SocketSenderUnicast.sendAndWaitResponse(f_rrm, ia, ExecutorMain.executorsPort);
                                         oos.writeObject(fm);
-                                        oos.close();
+                                        //oos.close();
                                         Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: contacted owner did answer with the result. Forwarded to client");
                                         return;
                                     } catch (ConnectException e){
@@ -164,7 +164,7 @@ public class CallbacksEngine {
                                     }
                                 } else {        //Contacted executor directly has the result
                                     oos.writeObject(m);
-                                    oos.close();
+                                    //oos.close();
                                     return;
                                 }
                             } else if (m instanceof IDontKnowMessage){  //if conctacted executor does know nothing, just skip to the next in line
