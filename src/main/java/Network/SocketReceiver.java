@@ -36,17 +36,20 @@ public class SocketReceiver extends Thread {
             ssocket = new ServerSocket(port);
             while (true) {
                 Socket socket = ssocket.accept();
-
+                socket.setKeepAlive(true);
+                //socket.setSoTimeout(2000);
+                socket.setTcpNoDelay(true);
                 OutputStream os = socket.getOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(os);
                 InputStream input = socket.getInputStream();
                 ObjectInputStream ois = new ObjectInputStream(input);
 
 
-                Object rcv = ois.readObject();
+                Object rcv = ois.readObject(); // TODO handle error
                 Logger.log(LoggerPriority.DEBUG, "SR -> Received new message");
                 CallbacksEngine.getIstance().handleCallback(rcv, socket.getInetAddress(), oos);
-                socket.close();
+                //sleep(1000);
+                //socket.close();
             }
         } catch (BindException e){
             Logger.log(LoggerPriority.ERROR, "(fatal) Address: " + this.port + " is already in use. Quitting...");

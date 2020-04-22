@@ -49,6 +49,8 @@ public class Job extends Thread implements Serializable, Callable {
 
     @Override
     public Object call() {
+        if (this.status == JobStatus.ABORTED)
+            return new Pair<String, Object>(this.id, null);
         this.status = JobStatus.EXECUTION;
         Object returned = this.task.execute();
         this.status = JobStatus.COMPLETED;

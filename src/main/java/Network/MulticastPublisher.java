@@ -25,6 +25,6 @@ public class MulticastPublisher {
 
         DatagramPacket packet  = new DatagramPacket(buf, buf.length, group, ExecutorMain.multicastPort);
         socket.send(packet);
-        socket.close();
+        //socket.close();
     }
 }

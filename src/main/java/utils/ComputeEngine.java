@@ -6,7 +6,6 @@ import Enumeration.LoggerPriority;
 import Main.ExecutorMain;
 import Messages.FallenExecutor;
 import Network.Broadcaster;
-import Network.SocketDatagramBroadcaster;
 import Tasks.Compute;
 import Tasks.Task;
 import Messages.ProposeJobMessage;
@@ -19,6 +18,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 
 import static Main.ExecutorMain.executorsPort;
 
@@ -42,11 +42,13 @@ public class ComputeEngine implements Compute {
     @Override
     public <T> String executeTask(Task<T> t) throws RemoteException {
         Job job = new Job(t);
-        ProposeJobMessage pjm = new ProposeJobMessage(job);
+        ArrayList<Job> jobs = new ArrayList<>();
+        jobs.add(job);
+        ProposeJobMessage pjm = new ProposeJobMessage(jobs);
         InetAddress address = Executor.getIstance().proposeJob();
         InetAddress localAddress = NetworkUtilis.getLocalAddress();
         if (address.equals(localAddress)){
-            Executor.getIstance().acceptJob(job);
+            Executor.getIstance().acceptJobs(jobs);
         } else {
             while (true) {
                 try {

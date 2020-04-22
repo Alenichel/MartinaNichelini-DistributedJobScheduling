@@ -3,26 +3,36 @@ package Entities;
 import Enumeration.JobReturnValue;
 import Enumeration.JobStatus;
 import Enumeration.LoggerPriority;
+import Messages.ProposeJobMessage;
 import Messages.UpdateTableMessage;
 import Network.Broadcaster;
 import Main.ExecutorMain;
+import Network.SocketSenderUnicast;
 import utils.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class Executor {
-    private Map<String, Job> idToJob;                                       // is persistent
-    private Map<InetAddress, Integer> executorToNumberOfJobs;
+    // keeps all executed job. It's persistent and it's lazily load at startup time
+    private Map<String, Job> idToJob;
+    // keeps jobs that are being handled
+    private Map<String, Job> idToActiveJobs;
+    private Map<InetAddress, Pair<Integer, Integer>> executorToInfos;
     private Map<String, InetAddress> foreignCompletedJobs;
-    private Map<String, Future<Pair<String, Job>>> idToFuture;
     private java.util.concurrent.Executor executorService;
     private CompletionService<Pair<String, Object>> executorCompletionService;
     private CallbackThread ct;
     private ArrayList<InetAddress> knownExecutors;                          // is persistent
+
     public static Executor instance = null;
 
     public static Executor getIstance() {
@@ -35,22 +45,22 @@ public class Executor {
     }
 
     private Executor() {
-        this.executorToNumberOfJobs = new HashMap<>();
-        this.executorToNumberOfJobs.put(ExecutorMain.localIP, 0);
-        this.foreignCompletedJobs = new HashMap<>();
+        this.executorToInfos = new HashMap<InetAddress, Pair<Integer, Integer>>();
+        this.executorToInfos.put(ExecutorMain.localIP, new Pair<>(0, ExecutorMain.nThreads));
+        this.foreignCompletedJobs = new HashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
-        this.idToJob = new LazyHashMap<>(ExecutorMain.relativePathToArchiveDir);
-        this.idToFuture = new HashMap<>();
+        this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.relativePathToArchiveDir);
+        this.idToActiveJobs = new HashMap<>();
         this.runUncompletedJobs();
         this.ct = new CallbackThread();
         this.ct.start();
         this.knownExecutors = new ArrayList<>();
     }
 
-    public synchronized void addExecutor(InetAddress address, Integer jobs){
-        if (!this.executorToNumberOfJobs.containsKey(address)) {
-            this.executorToNumberOfJobs.put(address, jobs);
+    public synchronized void addExecutor(InetAddress address, Integer jobs, Integer nThreads){
+        if (!this.executorToInfos.containsKey(address)) {
+            this.executorToInfos.put(address, new Pair<>(jobs, nThreads));
         }
         if (!this.knownExecutors.contains(address)){                    // if a new executor connects, add it to the list of know host
             if (address.equals(ExecutorMain.localIP)){
@@ -58,21 +68,21 @@ public class Executor {
             }
             this.knownExecutors.add(address);
         }
+        Logger.log(LoggerPriority.NOTIFICATION, "Connected executor @"  + address);
         printState();
     }
 
     public synchronized void removeExecutor(InetAddress address){
-        executorToNumberOfJobs.remove(address);
-        System.out.println("***************************");
-        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToNumberOfJobs));
-        System.out.println("***************************");
+        executorToInfos.remove(address);
+        Logger.log(LoggerPriority.NOTIFICATION, "Executor @"  + address + " leaved");
+        printState();
     }
 
-    private InetAddress getMinKey(Map<InetAddress, Integer> map) {
+    private InetAddress getMinKey(Map<InetAddress, Pair<Integer, Integer>> map) {
         InetAddress minKey = null;
         int minValue = Integer.MAX_VALUE;
         for(InetAddress key : map.keySet()) {
-            int value = map.get(key);
+            int value = map.get(key).first;
             if(value < minValue) {
                 minValue = value;
                 minKey = key;
@@ -82,50 +92,143 @@ public class Executor {
     }
 
     public InetAddress proposeJob(){
-        return getMinKey(this.executorToNumberOfJobs);
+        return getMinKey(this.executorToInfos);
     }
 
-    public void acceptJob(Job job) {
-        Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
+    public void acceptJobs(ArrayList<Job> jobs) {
+        ArrayList<String> acceptedJobsIds = new ArrayList<>();
+        for (Job job : jobs) {
+            Logger.log(LoggerPriority.NOTIFICATION, "EXECUTOR: Adding job of type " + job.getType() + " added to the job queue (id: " + job.getID() + ")");
 
-        job.setStatus(JobStatus.PENDING);
-        this.idToJob.put(job.getID(), job);
-        this.idToFuture.put(job.getID(), executorCompletionService.submit(job));
-        incrementJobs();
+            job.setStatus(JobStatus.PENDING);
+            this.idToJob.put(job.getID(), job);
+            this.idToActiveJobs.put(job.getID(), job);
+            executorCompletionService.submit(job);
+            incrementJobs(false);
 
-        UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), job.getID());
-
+            acceptedJobsIds.add(job.getID());
+        }
+        printState();
+        UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), acceptedJobsIds);
         Broadcaster.getInstance().send(msg);
-        //MulticastPublisher.send(msg);
     }
 
-    public Job reassignJobs(){
-        if(getNumberOfJobs() > ExecutorMain.nThreads ){
-            for (String key : idToFuture.keySet()){
-                if (idToJob.get(key).getStatus() == JobStatus.PENDING){
-                    idToFuture.get(key).cancel(true);
-                    return idToJob.get(key);
+    /*public void reassignJobs(InetAddress idleExecutor){
+        ArrayList<Job> jobToReassign = new ArrayList<>();
+        Integer maxN = executorToInfos.get(idleExecutor).second;    // to balance
+        if (this.getNumberOfJobs() > ExecutorMain.nThreads ){
+            for (Job j : this.idToActiveJobs.values()){
+                if(j.getStatus() == JobStatus.PENDING){
+                    jobToReassign.add(j);
+                    if (jobToReassign.size() == maxN)
+                        break;
+                }
+            }
+            try {
+                Logger.log(LoggerPriority.NOTIFICATION, "Found " + jobToReassign.size() + " jobs to reassign");
+                ProposeJobMessage pjb = new ProposeJobMessage(jobToReassign);
+                SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
+                for (Job job : jobToReassign) {
+                    job.setStatus(JobStatus.ABORTED);
+                    decrementJobs(false);
+                    Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID() + "to " + idleExecutor);
+                }
+                //printState();
+            } catch (IOException | ClassNotFoundException e) {
+                Logger.log(LoggerPriority.ERROR, "(not fatal) Impossible to handle job reassignment. Continuing");
+            } catch (NullPointerException e){
+                Logger.log(LoggerPriority.DEBUG, "no available jobs for reassignment");
+                return;
+            }
+
+            UpdateTableMessage utm = new UpdateTableMessage(this.getNumberOfJobs());
+            Broadcaster.getInstance().send(utm);
+        }
+    }*/
+    private int numberOfAccebtableJobs(InetAddress idleExecutor){
+        Integer availableSlots = executorToInfos.get(idleExecutor).second;
+        Long nOfNeededReassignament = executorToInfos.values().stream()
+                                                                .filter(value -> value.first > value.second)
+                                                                .count();
+        Integer toReturn = 0;
+        if(nOfNeededReassignament != 0){
+            if(availableSlots >= nOfNeededReassignament){
+                // We have more slots available than the number of needed reassignaments --> Each executor will send more than one job
+                toReturn = (int) (availableSlots/nOfNeededReassignament);
+            } else {
+                // We have less slots available than the number of needed reassignaments --> Only #availableSlots executors will balance the load
+                ArrayList<InetAddress> orderedList = (ArrayList<InetAddress>) executorToInfos.keySet().stream()
+                        .sorted()
+                        .limit(availableSlots)
+                        .collect(Collectors.toList());
+                if(orderedList.contains(ExecutorMain.localIP)) {
+                    toReturn = 1;
                 }
             }
         }
-        return null;
+        return toReturn;
     }
 
-    public Map<InetAddress, Integer> getExecutorToNumberOfJobs() { return executorToNumberOfJobs; }
+    public void reassignJobs(InetAddress idleExecutor){
+        ArrayList<Job> jobToReassign = new ArrayList<>();
+        Integer maxN = numberOfAccebtableJobs(idleExecutor);
+        if(maxN == 0){
+            return;
+        }
+        if (this.getNumberOfJobs() > ExecutorMain.nThreads ){
+            for (Job j : this.idToActiveJobs.values()){
+                if(j.getStatus() == JobStatus.PENDING){
+                    jobToReassign.add(j);
+                    if (jobToReassign.size() == maxN)
+                        break;
+                }
+            }
+            try {
+                Logger.log(LoggerPriority.NOTIFICATION, "Found " + jobToReassign.size() + " jobs to reassign");
+                ProposeJobMessage pjb = new ProposeJobMessage(jobToReassign);
+                SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
+                for (Job job : jobToReassign) {
+                    job.setStatus(JobStatus.ABORTED);
+                    decrementJobs(false);
+                    Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID() + "to " + idleExecutor);
+                }
+                //printState();
+            } catch (IOException | ClassNotFoundException e) {
+                Logger.log(LoggerPriority.ERROR, "(not fatal) Impossible to handle job reassignment. Continuing");
+            } catch (NullPointerException e){
+                Logger.log(LoggerPriority.DEBUG, "no available jobs for reassignment");
+                return;
+            }
+
+            UpdateTableMessage utm = new UpdateTableMessage(this.getNumberOfJobs());
+            Broadcaster.getInstance().send(utm);
+        }
+    }
+
+    public Map<InetAddress, Pair<Integer,Integer>> getExecutorToInfos() { return executorToInfos; }
 
     public Integer getNumberOfJobs() {
-        return this.executorToNumberOfJobs.get(ExecutorMain.localIP);
+        return this.executorToInfos.get(ExecutorMain.localIP).first;
     }
 
     public Map<String, InetAddress> getForeignCompletedJobs() { return foreignCompletedJobs; }
 
     private void incrementJobs(){
-        this.executorToNumberOfJobs.put(ExecutorMain.localIP, this.getNumberOfJobs() + 1);
-        printState();
+        incrementJobs(true);
+    }
+
+    private void incrementJobs(Boolean verbose){
+        this.executorToInfos.get(ExecutorMain.localIP).first = this.getNumberOfJobs() + 1;
+        if (verbose) printState();
     }
 
     private void decrementJobs(){
-        this.executorToNumberOfJobs.put(ExecutorMain.localIP, this.getNumberOfJobs() - 1);
+        decrementJobs(true);
+    }
+
+    private void decrementJobs(Boolean verbose){
+        this.executorToInfos.get(ExecutorMain.localIP).first = this.getNumberOfJobs() - 1;
+        if (verbose) printState();
     }
 
     public synchronized Map<String, Job> getIdToJob() {
@@ -133,7 +236,7 @@ public class Executor {
     }
 
     public synchronized void updateTable(InetAddress executor, Integer n){
-        this.executorToNumberOfJobs.put(executor, n);
+        this.executorToInfos.get(executor).first = n;
     }
 
     private class CallbackThread extends Thread {
@@ -142,10 +245,15 @@ public class Executor {
             while (true){
                 try {
                     Pair<String, Object> p = executorCompletionService.take().get();
+                    idToActiveJobs.remove(p.first);
+                    if (idToJob.get(p.first).getStatus() == JobStatus.ABORTED) {
+                        idToJob.remove(p.first);
+                        Logger.log(LoggerPriority.NOTIFICATION, "Process with id: " + p.first + " has been aborted");
+                        continue;
+                    }
                     Logger.log(LoggerPriority.NOTIFICATION, "Process (with id " + p.first + " finished with code): " + JobReturnValue.OK);
-                    idToFuture.remove(p.first);
                     ((LazyHashMap)idToJob).updateOnFile(p.first);         //black magic
-                    decrementJobs();
+                    decrementJobs(false);
                     printState();
                     UpdateTableMessage msg = new UpdateTableMessage(getNumberOfJobs(), idToJob.get(p.first).getID());
                     Broadcaster.getInstance().send(msg);
@@ -160,7 +268,7 @@ public class Executor {
     private void runUncompletedJobs(){
         ArrayList <Job> uncompletedJobs = new ArrayList<>();
         Logger.log(LoggerPriority.NOTIFICATION, "Recovering uncompleted jobs");
-        File dir = new File(System.getProperty("user.dir") + ExecutorMain.relativePathToArchiveDir);
+        File dir = new File(System.getProperty("user.home") + ExecutorMain.relativePathToArchiveDir);
         File[] directoryListing = dir.listFiles();
         Job loadedJob;
         Integer counter = 0;
@@ -195,7 +303,7 @@ public class Executor {
     }
 
     public void saveKnownExecutors(){
-        File file = new File(System.getProperty("user.dir") + "/knownExecutors.txt");
+        File file = new File(System.getProperty("user.home") + "/knownExecutors.txt");
         try {
             FileOutputStream fos = new FileOutputStream(file);
             OutputStreamWriter osw = new OutputStreamWriter(fos);
@@ -214,7 +322,7 @@ public class Executor {
 
     public void printState(){
         System.out.println("***************************");
-        System.out.println(new PrettyPrintingMap<InetAddress, Integer>(this.executorToNumberOfJobs));
+        System.out.println(new PrettyPrintingMap<InetAddress, Pair<Integer, Integer>>(this.executorToInfos));
         System.out.println("***************************");
     }
 }

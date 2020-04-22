@@ -5,6 +5,8 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import static java.lang.Thread.sleep;
+
 public class SocketSenderUnicast {
 
     private static ObjectOutputStream buildOOS(InetAddress host, Integer port) throws IOException {
@@ -19,7 +21,12 @@ public class SocketSenderUnicast {
         ObjectOutputStream oos = buildOOS(host, port);
         oos.writeObject(message);
         oos.flush();
-        oos.reset();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //oos.reset();
     }
 
     public static Message sendAndWaitResponse(Message message, InetAddress host, Integer port) throws IOException, ClassNotFoundException {
@@ -32,7 +39,7 @@ public class SocketSenderUnicast {
 
         oos.writeObject(message);
         Message rcvd = (Message)ois.readObject();
-        socket.close();
+        //socket.close();
 
         return rcvd;
     }

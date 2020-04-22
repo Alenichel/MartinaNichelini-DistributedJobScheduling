@@ -4,7 +4,6 @@ import Entities.Executor;
 import Entities.Job;
 import Enumeration.LoggerPriority;
 import Messages.*;
-import Network.Broadcaster;
 import Network.SocketSenderUnicast;
 import Main.ExecutorMain;
 
@@ -38,7 +37,7 @@ public class CallbacksEngine {
     private void sendDKM(ObjectOutputStream oos) throws IOException {
         IDontKnowMessage idkm = new IDontKnowMessage();
         oos.writeObject(idkm);
-        oos.close();
+        //oos.close();
     }
 
     public void handleCallback(Object msg, InetAddress fromAddress, ObjectOutputStream oos) throws InterruptedException, IOException, ClassNotFoundException {
@@ -47,12 +46,13 @@ public class CallbacksEngine {
         switch (message.getType()){
             case PONG_MESSAGE:
                 Integer n = ((PongMessage)msg).getNumberOfJobs();
-                Executor.getIstance().addExecutor(fromAddress, n);
+                Integer nThread = ((PongMessage)msg).getNThread();
+                Executor.getIstance().addExecutor(fromAddress, n, nThread);
                 break;
 
             case PROPOSE_JOB:
-                Job j = ((ProposeJobMessage)msg).getJob();
-                Executor.getIstance().acceptJob(j);
+                ArrayList<Job> jobs = ((ProposeJobMessage)msg).getJobs();
+                Executor.getIstance().acceptJobs(jobs);
                 break;
 
             case JOIN_MESSAGE:
@@ -63,12 +63,12 @@ public class CallbacksEngine {
                     } else {
                         toAdjust = true;
                     }
-                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs(), Executor.getIstance().getExecutorToNumberOfJobs().keySet().stream().collect(Collectors.toList()), toAdjust);
+                    Message pongMessage = new PongMessage(Executor.getIstance().getNumberOfJobs(), Executor.getIstance().getExecutorToInfos().keySet().stream().collect(Collectors.toList()), toAdjust, ExecutorMain.nThreads);
                     if (  ((JoinMessage)msg).getJustExploring()  ) {
                         oos.writeObject(pongMessage);
                         Logger.log(LoggerPriority.NOTIFICATION, "Directly responded to exploring message.");
                     } else {
-                        Executor.getIstance().addExecutor(fromAddress, 0);
+                        Executor.getIstance().addExecutor(fromAddress, 0, ((JoinMessage)message).getNThreads());
                         SocketSenderUnicast.send(pongMessage, fromAddress, ExecutorMain.executorsPort);
                     }
                 } catch (IOException | ClassNotFoundException e){
@@ -91,34 +91,32 @@ public class CallbacksEngine {
                 Integer nJobs = ((UpdateTableMessage)message).getnJobs();
                 Executor.getIstance().updateTable(fromAddress, nJobs);
 
-                Executor.getIstance().getForeignCompletedJobs().put( ((UpdateTableMessage)message).getJobId() ,fromAddress);
-                Executor.getIstance().printState();
-
-                if(nJobs == 0){
-                    Job rj = Executor.getIstance().reassignJobs();
-                    if (rj != null){
-                        ProposeJobMessage pjm = new ProposeJobMessage(rj);
-                        SocketSenderUnicast.send(pjm, fromAddress, ExecutorMain.executorsPort);
-                        UpdateTableMessage utm = new UpdateTableMessage(Executor.getIstance().getNumberOfJobs(), rj.getID());
-                        Broadcaster.getInstance().send(utm);
-                        Logger.log(LoggerPriority.NOTIFICATION, "Reassingned job with id: " + rj.getID());
+                ArrayList<String> jobsId = ((UpdateTableMessage)message).getJobId();
+                if (jobsId != null){
+                    for (String s : jobsId){
+                        Executor.getIstance().getForeignCompletedJobs().put(s, fromAddress);
                     }
                 }
-
+                if (fromAddress != ExecutorMain.localIP) {
+                    Executor.getIstance().printState();
+                }
+                if (nJobs == 0){
+                    Executor.getIstance().reassignJobs(fromAddress);
+                }
                 break;
 
 
             case RESULT_REQUEST_MESSAGE:
                 ResultRequestMessage rrm = (ResultRequestMessage)message;
                 String id = rrm.getJobId();
-                Map<String, Job> jobs = Executor.getIstance().getIdToJob();
+                Map<String, Job> jobss = Executor.getIstance().getIdToJob();
                 // Directly respond if you have the result
-                if (jobs.containsKey(id)) {
+                if (jobss.containsKey(id)) {
                     Logger.log(LoggerPriority.DEBUG, "RESULT_REQUEST_MESSAGE_HANDLER: Contacted executor is the owner of the job, now answering");
-                    Job js = jobs.get(id);
+                    Job js = jobss.get(id);
                     IKnowMessage rrm_toSend = new IKnowMessage(js.getStatus(), js.getResult());
                     oos.writeObject(rrm_toSend);
-                    oos.close();
+                    //oos.close();
                 }
                 // Directly contact the owner of the job if know it
                 else if (Executor.getIstance().getForeignCompletedJobs().containsKey(id)){
@@ -128,7 +126,7 @@ public class CallbacksEngine {
                         InetAddress ia = Executor.getIstance().getForeignCompletedJobs().get(id);
                         Message m = SocketSenderUnicast.sendAndWaitResponse(rrm_toSend, ia, ExecutorMain.executorsPort);
                         oos.writeObject(m);
-                        oos.close();
+                        //oos.close();
                     } catch (ConnectException e) {
                         Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: Contacted owner did not respond. This exception has been handled");
                         sendDKM(oos);
@@ -143,7 +141,7 @@ public class CallbacksEngine {
                         // if you still have to handle the request (the client asked to you)
                         ResultRequestMessage rrm_toSend = new ResultRequestMessage(id, true);
 
-                        Set<InetAddress> addresses = Executor.getIstance().getExecutorToNumberOfJobs().keySet();
+                        Set<InetAddress> addresses = Executor.getIstance().getExecutorToInfos().keySet();
                         addresses.remove(NetworkUtilis.getLocalAddress());
                         for (InetAddress r_ia : addresses){
                             Message m =  SocketSenderUnicast.sendAndWaitResponse(rrm_toSend, r_ia, ExecutorMain.executorsPort);
@@ -156,7 +154,7 @@ public class CallbacksEngine {
                                         ResultRequestMessage f_rrm = new ResultRequestMessage(id, true);
                                         Message fm = SocketSenderUnicast.sendAndWaitResponse(f_rrm, ia, ExecutorMain.executorsPort);
                                         oos.writeObject(fm);
-                                        oos.close();
+                                        //oos.close();
                                         Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: contacted owner did answer with the result. Forwarded to client");
                                         return;
                                     } catch (ConnectException e){
@@ -166,7 +164,7 @@ public class CallbacksEngine {
                                     }
                                 } else {        //Contacted executor directly has the result
                                     oos.writeObject(m);
-                                    oos.close();
+                                    //oos.close();
                                     return;
                                 }
                             } else if (m instanceof IDontKnowMessage){  //if conctacted executor does know nothing, just skip to the next in line

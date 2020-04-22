@@ -7,7 +7,6 @@ import Messages.JoinMessage;
 import Messages.Message;
 import Messages.PongMessage;
 import utils.Logger;
-import utils.NetworkUtilis;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -32,7 +31,7 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
 
     private PongMessage manuallyAskForHost(){
         Scanner scanner = new Scanner(System.in);
-        JoinMessage jm = new JoinMessage();
+        JoinMessage jm = new JoinMessage(ExecutorMain.nThreads);
         jm.setJustExploring(true);
         PongMessage pm;
         while (true) {
@@ -66,7 +65,7 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
     public void sayHello(){
         ArrayList<InetAddress> kh = Executor.getIstance().getKnownExecutors();
         PongMessage pm = null;
-        JoinMessage jm = new JoinMessage();
+        JoinMessage jm = new JoinMessage(ExecutorMain.nThreads);
         jm.setJustExploring(true);
 
         if (kh.isEmpty()) {                                                            // if there is not any known host
@@ -116,11 +115,11 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
             }
         }
 
-        this.sendTo(new JoinMessage(), kh);
+        this.sendTo(new JoinMessage(ExecutorMain.nThreads), kh);
     }
 
     public void send(Message msg){
-        sendTo(msg, Executor.getIstance().getExecutorToNumberOfJobs().keySet());
+        sendTo(msg, Executor.getIstance().getExecutorToInfos().keySet());
     }
 
     public void sendTo(Message msg, Collection<InetAddress> recepient){
@@ -140,8 +139,12 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
 
     private void loadKnownExecutors(){
         Logger.log(LoggerPriority.NOTIFICATION, "Loading known host from file");
-        File file = new File(System.getProperty("user.dir") + "/knownExecutors.txt");
+        File file = new File(System.getProperty("user.home") + "/knownExecutors.txt");
+
         try {
+            if (!file.exists()){
+                file.createNewFile();
+            }
             FileInputStream fis = new FileInputStream(file);
             InputStreamReader isr = new InputStreamReader(fis);
             BufferedReader br = new BufferedReader(isr);
@@ -152,7 +155,10 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
                 line = br.readLine();
             }
 
-        } catch (UnknownHostException e) {
+        }catch (FileNotFoundException e){
+
+        }
+        catch (UnknownHostException e) {
 
         } catch (IOException e) {
             Logger.log(LoggerPriority.ERROR, "(not fatal) error while opening know host file");
