@@ -151,17 +151,19 @@ public class Executor {
                                                                 .filter(value -> value.first > value.second)
                                                                 .count();
         Integer toReturn = 0;
-        if(availableSlots >= nOfNeededReassignament){
-            // We have more slots available than the number of needed reassignaments --> Each executor will send more than one job
-            toReturn = (int) (availableSlots/nOfNeededReassignament);
-        } else {
-            // We have less slots available than the number of needed reassignaments --> Only #availableSlots executors will balance the load
-            ArrayList<InetAddress> orderedList = (ArrayList<InetAddress>) executorToInfos.keySet().stream()
-                                                                                                  .sorted()
-                                                                                                  .limit(availableSlots)
-                                                                                                  .collect(Collectors.toList());
-            if(orderedList.contains(ExecutorMain.localIP)) {
-                toReturn = 1;
+        if(nOfNeededReassignament != 0){
+            if(availableSlots >= nOfNeededReassignament){
+                // We have more slots available than the number of needed reassignaments --> Each executor will send more than one job
+                toReturn = (int) (availableSlots/nOfNeededReassignament);
+            } else {
+                // We have less slots available than the number of needed reassignaments --> Only #availableSlots executors will balance the load
+                ArrayList<InetAddress> orderedList = (ArrayList<InetAddress>) executorToInfos.keySet().stream()
+                        .sorted()
+                        .limit(availableSlots)
+                        .collect(Collectors.toList());
+                if(orderedList.contains(ExecutorMain.localIP)) {
+                    toReturn = 1;
+                }
             }
         }
         return toReturn;
