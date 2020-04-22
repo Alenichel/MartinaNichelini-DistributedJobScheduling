@@ -139,7 +139,7 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
 
     private void loadKnownExecutors(){
         Logger.log(LoggerPriority.NOTIFICATION, "Loading known host from file");
-        File file = new File(System.getProperty("user.dir") + "/knownExecutors.txt");
+        File file = new File(System.getProperty("user.home") + "/knownExecutors.txt");
 
         try {
             if (!file.exists()){
