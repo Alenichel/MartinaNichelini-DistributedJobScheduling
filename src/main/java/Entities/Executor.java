@@ -19,6 +19,7 @@ import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class Executor {
     // keeps all executed job. It's persistent and it's lazily load at startup time
@@ -112,9 +113,66 @@ public class Executor {
         Broadcaster.getInstance().send(msg);
     }
 
-    public void reassignJobs(InetAddress idleExecutor){
+    /*public void reassignJobs(InetAddress idleExecutor){
         ArrayList<Job> jobToReassign = new ArrayList<>();
         Integer maxN = executorToInfos.get(idleExecutor).second;    // to balance
+        if (this.getNumberOfJobs() > ExecutorMain.nThreads ){
+            for (Job j : this.idToActiveJobs.values()){
+                if(j.getStatus() == JobStatus.PENDING){
+                    jobToReassign.add(j);
+                    if (jobToReassign.size() == maxN)
+                        break;
+                }
+            }
+            try {
+                Logger.log(LoggerPriority.NOTIFICATION, "Found " + jobToReassign.size() + " jobs to reassign");
+                ProposeJobMessage pjb = new ProposeJobMessage(jobToReassign);
+                SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
+                for (Job job : jobToReassign) {
+                    job.setStatus(JobStatus.ABORTED);
+                    decrementJobs(false);
+                    Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID() + "to " + idleExecutor);
+                }
+                //printState();
+            } catch (IOException | ClassNotFoundException e) {
+                Logger.log(LoggerPriority.ERROR, "(not fatal) Impossible to handle job reassignment. Continuing");
+            } catch (NullPointerException e){
+                Logger.log(LoggerPriority.DEBUG, "no available jobs for reassignment");
+                return;
+            }
+
+            UpdateTableMessage utm = new UpdateTableMessage(this.getNumberOfJobs());
+            Broadcaster.getInstance().send(utm);
+        }
+    }*/
+    private int numberOfAccebtableJobs(InetAddress idleExecutor){
+        Integer availableSlots = executorToInfos.get(idleExecutor).second;
+        Long nOfNeededReassignament = executorToInfos.values().stream()
+                                                                .filter(value -> value.first > value.second)
+                                                                .count();
+        Integer toReturn = 0;
+        if(availableSlots >= nOfNeededReassignament){
+            // We have more slots available than the number of needed reassignaments --> Each executor will send more than one job
+            toReturn = (int) (availableSlots/nOfNeededReassignament);
+        } else {
+            // We have less slots available than the number of needed reassignaments --> Only #availableSlots executors will balance the load
+            ArrayList<InetAddress> orderedList = (ArrayList<InetAddress>) executorToInfos.keySet().stream()
+                                                                                                  .sorted()
+                                                                                                  .limit(availableSlots)
+                                                                                                  .collect(Collectors.toList());
+            if(orderedList.contains(ExecutorMain.localIP)) {
+                toReturn = 1;
+            }
+        }
+        return toReturn;
+    }
+
+    public void reassignJobs(InetAddress idleExecutor){
+        ArrayList<Job> jobToReassign = new ArrayList<>();
+        Integer maxN = numberOfAccebtableJobs(idleExecutor);
+        if(maxN == 0){
+            return;
+        }
         if (this.getNumberOfJobs() > ExecutorMain.nThreads ){
             for (Job j : this.idToActiveJobs.values()){
                 if(j.getStatus() == JobStatus.PENDING){
