@@ -113,38 +113,6 @@ public class Executor {
         Broadcaster.getInstance().send(msg);
     }
 
-    /*public void reassignJobs(InetAddress idleExecutor){
-        ArrayList<Job> jobToReassign = new ArrayList<>();
-        Integer maxN = executorToInfos.get(idleExecutor).second;    // to balance
-        if (this.getNumberOfJobs() > ExecutorMain.nThreads ){
-            for (Job j : this.idToActiveJobs.values()){
-                if(j.getStatus() == JobStatus.PENDING){
-                    jobToReassign.add(j);
-                    if (jobToReassign.size() == maxN)
-                        break;
-                }
-            }
-            try {
-                Logger.log(LoggerPriority.NOTIFICATION, "Found " + jobToReassign.size() + " jobs to reassign");
-                ProposeJobMessage pjb = new ProposeJobMessage(jobToReassign);
-                SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
-                for (Job job : jobToReassign) {
-                    job.setStatus(JobStatus.ABORTED);
-                    decrementJobs(false);
-                    Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID() + "to " + idleExecutor);
-                }
-                //printState();
-            } catch (IOException | ClassNotFoundException e) {
-                Logger.log(LoggerPriority.ERROR, "(not fatal) Impossible to handle job reassignment. Continuing");
-            } catch (NullPointerException e){
-                Logger.log(LoggerPriority.DEBUG, "no available jobs for reassignment");
-                return;
-            }
-
-            UpdateTableMessage utm = new UpdateTableMessage(this.getNumberOfJobs());
-            Broadcaster.getInstance().send(utm);
-        }
-    }*/
     private int numberOfAccebtableJobs(InetAddress idleExecutor){
         Integer availableSlots = executorToInfos.get(idleExecutor).second;
         Long nOfNeededReassignament = executorToInfos.values().stream()
