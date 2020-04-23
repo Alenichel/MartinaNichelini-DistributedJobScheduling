@@ -178,17 +178,9 @@ public class Executor {
 
     public Map<String, InetAddress> getForeignCompletedJobs() { return foreignCompletedJobs; }
 
-    private void incrementJobs(){
-        incrementJobs(true);
-    }
-
     private void incrementJobs(Boolean verbose){
         this.executorToInfos.get(ExecutorMain.localIP).first = this.getNumberOfJobs() + 1;
         if (verbose) printState();
-    }
-
-    private void decrementJobs(){
-        decrementJobs(true);
     }
 
     private void decrementJobs(Boolean verbose){
