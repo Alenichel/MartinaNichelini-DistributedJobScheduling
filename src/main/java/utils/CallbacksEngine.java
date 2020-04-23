@@ -155,7 +155,7 @@ public class CallbacksEngine {
                                         Message fm = SocketSenderUnicast.sendAndWaitResponse(f_rrm, ia, ExecutorMain.executorsPort);
                                         oos.writeObject(fm);
                                         //oos.close();
-                                        Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: contacted owner did answer with the result. Forwarded to client");
+                                        Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: contacted owner (" + ia  + ") did answer with the result. Forwarded to client");
                                         return;
                                     } catch (ConnectException e){
                                         Logger.log(LoggerPriority.WARNING, "RESULT_REQUEST_MESSAGE_HANDLER: Contacted owner did not respond. This exception has been handled");
