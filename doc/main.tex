@@ -87,7 +87,7 @@ public interface Task<T> {
 	\item The client can ask for job result at any time and to any executor: if the job has been completed, the result will be provided, otherwise the client will be notified about the actual job status.
 	\item Job results are kept only by the actual executors. All others have a reference to it. If an executor is asked for a result that it does not have, it will handle the research on behalf of the client.
 	\item At startup time, executors check for uncompleted jobs due to previous errors and execute them before joining the system. Executors will also lazily load jobs' result when requested.
-
+	\item The system, once a new job is sent by a client, automatically tries to balance the load as much as possible. Since that different cores may require really different computational time span a routine for rebalancing has been implemented. This routine is triggered once an executor has no more job to perform.
 		
 \end{itemize}
 \end{document}
