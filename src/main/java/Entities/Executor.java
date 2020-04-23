@@ -15,10 +15,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class Executor {
@@ -45,13 +42,13 @@ public class Executor {
     }
 
     private Executor() {
-        this.executorToInfos = new HashMap<InetAddress, Pair<Integer, Integer>>();
+        this.executorToInfos = new ConcurrentHashMap<InetAddress, Pair<Integer, Integer>>();
         this.executorToInfos.put(ExecutorMain.localIP, new Pair<>(0, ExecutorMain.nThreads));
-        this.foreignCompletedJobs = new HashMap<String, InetAddress>();
+        this.foreignCompletedJobs = new ConcurrentHashMap<String, InetAddress>();
         this.executorService = Executors.newFixedThreadPool(ExecutorMain.nThreads);
         this.executorCompletionService = new ExecutorCompletionService<>(executorService);
         this.idToJob = new LazyHashMap<String, Job>(ExecutorMain.relativePathToArchiveDir);
-        this.idToActiveJobs = new HashMap<>();
+        this.idToActiveJobs = new ConcurrentHashMap<>();
         this.runUncompletedJobs();
         this.ct = new CallbackThread();
         this.ct.start();
