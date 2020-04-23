@@ -25,8 +25,7 @@ public class SocketPacketBroadcaster implements BroadcastingUnit{
 
     public SocketPacketBroadcaster(Integer port) {
         this.port = port;
-        this.loadKnownExecutors();
-
+        //this.loadKnownExecutors();
     }
 
     private PongMessage manuallyAskForHost(){
