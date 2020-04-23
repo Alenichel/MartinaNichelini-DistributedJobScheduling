@@ -71,7 +71,7 @@ public class Executor {
 
     public synchronized void removeExecutor(InetAddress address){
         executorToInfos.remove(address);
-        Logger.log(LoggerPriority.NOTIFICATION, "Executor @"  + address + " leaved");
+        Logger.log(LoggerPriority.NOTIFICATION, "Executor @"  + address + " left");
         printState();
     }
 
