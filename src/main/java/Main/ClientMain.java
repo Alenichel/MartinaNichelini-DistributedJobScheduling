@@ -38,7 +38,8 @@ public class ClientMain {
         Registry registry = null;
 
         try {
-            registry = LocateRegistry.getRegistry(host);
+            registry = LocateRegistry.getRegistry(host, 1099);
+            String[] l = registry.list();
             Compute comp = (Compute) registry.lookup(name);
             Logger.log(LoggerPriority.NOTIFICATION, "RMI ready");
 

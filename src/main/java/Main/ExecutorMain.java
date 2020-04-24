@@ -21,6 +21,7 @@ public class ExecutorMain {
     public static final Integer executorsPort = 9670;
     public static final Integer multicastPort = 6789;
     public static final Integer RMIPort = 1099;
+    public static final Integer RMIMethodPort = 1100;
     public static final String relativePathToArchiveDir = "/.DJS/ser/";
     public static Integer nThreads = Runtime.getRuntime().availableProcessors();
     public static final InetAddress localIP = NetworkUtilis.getLocalAddress();
@@ -38,6 +39,7 @@ public class ExecutorMain {
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.net.preferIPv4Stack", "true");
+        //System.setProperty("java.rmi.server.hostname", externalIP.toString().substring(1));
 
         /*String WD = System.getProperty("user.dir");
         String repoRelativePath = "src/main/java";

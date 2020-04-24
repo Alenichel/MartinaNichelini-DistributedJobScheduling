@@ -20,6 +20,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
+import static Main.ExecutorMain.RMIMethodPort;
 import static Main.ExecutorMain.executorsPort;
 
 public class ComputeEngine implements Compute {
@@ -76,7 +77,7 @@ public class ComputeEngine implements Compute {
         try {
             String name = "Compute";
             Compute engine = new ComputeEngine();
-            Compute stub = (Compute) UnicastRemoteObject.exportObject(engine, 0);
+            Compute stub = (Compute) UnicastRemoteObject.exportObject(engine, RMIMethodPort);
             //Registry registry = LocateRegistry.getRegistry();
             Registry registry = LocateRegistry.createRegistry(ExecutorMain.RMIPort);
             registry.rebind(name, stub);
