@@ -49,6 +49,7 @@ public class ClientMain {
                         "\n1) Send pi task" +
                         "\n2) Send sleep task" +
                         "\n3) Request return value" +
+                        "\n4) Send a bunch of pi task" +
                         "\n9) Exit" +
                         "\n***************************");
                 String tokens[] = scanner.nextLine().split("");
@@ -91,7 +92,7 @@ public class ClientMain {
                         break;
                     case 4:
                         Integer i = 0;
-                        while (i < 15){
+                        while (i < 25){
                             Pi taskk = new Pi(i + 80000);
                             String idd = null;
                             idd = comp.executeTask(taskk);
