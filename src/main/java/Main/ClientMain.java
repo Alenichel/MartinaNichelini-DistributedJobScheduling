@@ -91,8 +91,10 @@ public class ClientMain {
                         }
                         break;
                     case 4:
+                        Integer tot = 25;
+                        System.out.println("Sending jobs: " + tot);
                         Integer i = 0;
-                        while (i < 25){
+                        while (i < tot){
                             Pi taskk = new Pi(i + 80000);
                             String idd = null;
                             idd = comp.executeTask(taskk);
