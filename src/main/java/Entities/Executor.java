@@ -71,7 +71,7 @@ public class Executor {
 
     public synchronized void removeExecutor(InetAddress address){
         if (address == ExecutorMain.localIP ){
-            System.out.println("Sooooooooooooooo wrong");
+            //System.out.println("Sooooooooooooooo wrong");
             return;
         }
         executorToInfos.remove(address);
