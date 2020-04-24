@@ -39,7 +39,7 @@ public class ExecutorMain {
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.net.preferIPv4Stack", "true");
-        //System.setProperty("java.rmi.server.hostname", externalIP.toString().substring(1));
+        System.setProperty("java.rmi.server.hostname", externalIP.toString().substring(1));
 
         /*String WD = System.getProperty("user.dir");
         String repoRelativePath = "src/main/java";
@@ -104,7 +104,7 @@ public class ExecutorMain {
         Logger.log(LoggerPriority.NOTIFICATION, "Socket TCP client receiver started on port: " + clientsPort);
 
         ComputeEngine.getIstance().startRMI();
-        Logger.log(LoggerPriority.NOTIFICATION, "RMI listener started on port: " + RMIPort);
+        Logger.log(LoggerPriority.NOTIFICATION, "RMI listener started on port: " + RMIPort + ". Also port" + RMIMethodPort + "must be open");
 
         Logger.log(LoggerPriority.NOTIFICATION, "My local ip address is: " + localIP);
         Logger.log(LoggerPriority.NOTIFICATION, "My external ip address is: " + externalIP);
