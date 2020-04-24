@@ -39,15 +39,7 @@ public class ExecutorMain {
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.net.preferIPv4Stack", "true");
-        System.setProperty("java.rmi.server.hostname", externalIP.toString().substring(1));
 
-        /*String WD = System.getProperty("user.dir");
-        String repoRelativePath = "src/main/java";
-
-        if (!WD.substring(WD.length() - repoRelativePath.length()).equals(repoRelativePath)){
-            Logger.log(LoggerPriority.ERROR, "(fatal) Working Directory must be <relative_path_to_the_repo>/src/main/java\nIt's " + System.getProperty("user.dir"));
-            return;
-        }*/
 
         Scanner s = new Scanner(System.in);
         System.out.println("\nChoose: \n1) for using LOCAL_MODE only\n2) for using GLOBAL_MODE.\nDefault: 1\n");
@@ -70,6 +62,24 @@ public class ExecutorMain {
         }
 
         Logger.log(LoggerPriority.NOTIFICATION, "Choosen type: " + bt);
+
+        System.out.println("\nChoose \n1) for binding rmi server on LAN \n2) for binding rmi server on WAN\ndefault 1");
+
+        choice = 1;
+        try {
+            choice = Integer.parseInt(s.nextLine());
+        } catch (InputMismatchException | NumberFormatException e){
+            choice = 1;
+        }
+
+        switch(choice){
+            case 1:
+                break;
+            case 2:
+                System.setProperty("java.rmi.server.hostname", externalIP.toString().substring(1));
+            default:
+                break;
+        }
 
         Logger.log(LoggerPriority.NORMAL, "\n\n\n\n\n\n\n\n\n");
         Logger.log(LoggerPriority.NORMAL, "++++++++++++++++++++++++++++++");
