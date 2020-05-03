@@ -10,10 +10,8 @@ import Main.ExecutorMain;
 import Network.SocketSenderUnicast;
 import utils.*;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -114,7 +112,10 @@ public class Executor {
         Broadcaster.getInstance().send(msg);
     }
 
-    private int numberOfAccebtableJobs(InetAddress idleExecutor){
+    /*
+        DISTRIBUTED DECISION: Each executors is able to determine the number of jobs it can reassign because it has the entire state.
+     */
+    private int numberOfJobsToSend(InetAddress idleExecutor){
         Integer availableSlots = executorToInfos.get(idleExecutor).second;
         Long nOfNeededReassignament = executorToInfos.values().stream()
                                                                 .filter(value -> value.first > value.second)
@@ -140,7 +141,7 @@ public class Executor {
 
     public void reassignJobs(InetAddress idleExecutor){
         ArrayList<Job> jobToReassign = new ArrayList<>();
-        Integer maxN = numberOfAccebtableJobs(idleExecutor);
+        Integer maxN = numberOfJobsToSend(idleExecutor);
         if(maxN == 0){
             return;
         }
