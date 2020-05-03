@@ -143,8 +143,11 @@ public class CallbacksEngine {
                         ResultRequestMessage rrm_toSend = new ResultRequestMessage(id, true);
 
                         Set<InetAddress> addresses = Executor.getIstance().getExecutorToInfos().keySet();
-                        addresses.remove(NetworkUtilis.getLocalAddress());
+                        //.remove(NetworkUtilis.getLocalAddress());
                         for (InetAddress r_ia : addresses){
+                            if(r_ia == ExecutorMain.localIP) {
+                                continue;
+                            }
                             Message m =  SocketSenderUnicast.sendAndWaitResponse(rrm_toSend, r_ia, ExecutorMain.executorsPort);
                             if (m instanceof IKnowMessage) {
                                 IKnowMessage ikm = (IKnowMessage) m;
