@@ -57,6 +57,11 @@ public class LazyHashMap<K, V> extends HashMap<K, V> {
         return super.remove(key);
     }
 
+    public void removeJustFromDisk(Object key){
+        File pendingFile = new File(path + "PENDING_" + key.toString());
+        pendingFile.delete();
+    }
+
     private void loadKeySet(){                       // it iterates over all filenames and it puts a couple (key, value)
         File dir = new File(path);                  //  in it's own data structure
         File[] directoryListing = dir.listFiles();
