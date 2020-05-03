@@ -158,7 +158,7 @@ public class Executor {
                 SocketSenderUnicast.send(pjb, idleExecutor, ExecutorMain.executorsPort);
                 for (Job job : jobToReassign) {
                     job.setStatus(JobStatus.ABORTED);
-                    ((LazyHashMap)this.idToJob).removeJustFromDisk(job);
+                    ((LazyHashMap)this.idToJob).removeJustFromDisk(job.getID());
                     decrementJobs(false);
                     Logger.log(LoggerPriority.NOTIFICATION, "Correctly reassigned job with id: " + job.getID() + "to " + idleExecutor);
                 }
