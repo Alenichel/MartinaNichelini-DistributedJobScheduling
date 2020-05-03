@@ -13,7 +13,7 @@ public class SleepTask implements Task<JobReturnValue>, Serializable {
     private Integer waitingTime;
 
     public SleepTask(){
-        this.waitingTime = ThreadLocalRandom.current().nextInt(1, 10 + 1);
+        this.waitingTime = ThreadLocalRandom.current().nextInt(1, 10 + 1) * 1000;
     }
 
     private JobReturnValue sleepTask(){
