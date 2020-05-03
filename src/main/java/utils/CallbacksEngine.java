@@ -67,7 +67,6 @@ public class CallbacksEngine {
                     if (  ((JoinMessage)msg).getJustExploring()  ) {
                         oos.writeObject(pongMessage);
                         Logger.log(LoggerPriority.NOTIFICATION, "Directly responded to exploring message.");
-                        Executor.getIstance().reassignJobs(fromAddress);
                     } else {
                         Executor.getIstance().addExecutor(fromAddress, 0, ((JoinMessage)message).getNThreads());
                         SocketSenderUnicast.send(pongMessage, fromAddress, ExecutorMain.executorsPort);
@@ -78,6 +77,7 @@ public class CallbacksEngine {
                     Executor.getIstance().removeExecutor(fromAddress);
                     Logger.log(LoggerPriority.WARNING, "Faulty executor removed");
                 }
+                Executor.getIstance().reassignJobs(fromAddress);
                 break;
 
             case LEAVE_MESSAGE:
